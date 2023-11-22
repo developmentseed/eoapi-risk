@@ -50,7 +50,11 @@ singleuser:
 hub:
   config:
     GitHubOAuthenticator:
+<<<<<<< HEAD
       client_id: 80a37fd680d7d7095d58
+=======
+      client_id: ""
+>>>>>>> dea865c (Install eoAPI and JupyterHub on the labs cluster)
       client_secret: ""
       oauth_callback_url: https://jupyter.ifrc-risk.k8s.labs.ds.io/hub/oauth_callback
       allowed_organizations:
