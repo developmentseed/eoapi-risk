@@ -1,0 +1,73 @@
+singleuser:
+  # Base image used for spawning user's notebook servers
+  image:
+    name: jupyter/minimal-notebook
+    tag: latest
+  cmd: null
+
+  # Resource allocation per user
+  memory:
+    limit: 1G
+    guarantee: 1G
+  cpu:
+    limit: 0.5
+    guarantee: 0.5
+  storage:
+    extraVolumes:
+      - name: shm-volume
+        emptyDir:
+          medium: Memory
+    extraVolumeMounts:
+      - name: shm-volume
+        mountPath: /dev/shm
+    capacity: 50Gi
+  
+  # Culling idle servers
+  extraFiles:
+    # jupyter_notebook_config reference: https://jupyter-notebook.readthedocs.io/en/stable/config.html
+    jupyter_notebook_config.json:
+      mountPath: /etc/jupyter/jupyter_notebook_config.json
+      # data is a YAML structure here but will be rendered to JSON file as our
+      # file extension is ".json".
+      data:
+        MappingKernelManager:
+          # cull_idle_timeout: timeout (in seconds) after which an idle kernel is
+          # considered ready to be culled
+          cull_idle_timeout: 1200 # default: 0
+
+          # cull_interval: the interval (in seconds) on which to check for idle
+          # kernels exceeding the cull timeout value
+          cull_interval: 120 # default: 300
+
+          # cull_connected: whether to consider culling kernels which have one
+          # or more connections
+          cull_connected: true # default: false
+
+          # cull_busy: whether to consider culling kernels which are currently
+          # busy running some code
+          cull_busy: false # default: false
+
+hub:
+  config:
+    GitHubOAuthenticator:
+      client_id: ""
+      client_secret: ""
+      oauth_callback_url: https://jupyter.ifrc-risk.k8s.labs.ds.io/hub/oauth_callback
+      allowed_organizations:
+        - developmentseed
+      scope:
+        - read:org
+    JupyterHub:
+      authenticator_class: github
+
+ingress:
+  enabled: true
+  hosts:
+    - jupyter.ifrc-risk.k8s.labs.ds.io
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/issuer: letsencrypt-prod
+  tls:
+    - hosts:
+        - jupyter.ifrc-risk.k8s.labs.ds.io
+      secretName: jupyterhub-tls

@@ -1,0 +1,56 @@
+name: Deploy with Helm
+
+on:
+  push:
+    branches:
+    - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - id: 'auth'
+      uses: 'google-github-actions/auth@v1'
+      with:
+        credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
+
+    - name: 'Set up Cloud SDK'
+      uses: 'google-github-actions/setup-gcloud@v1'
+    - name: Configure kubectl
+      run: |
+        gcloud components install gke-gcloud-auth-plugin
+        gcloud config set project ${{ secrets.PROJECT_ID }}
+        gcloud config set compute/zone ${{ secrets.COMPUTE_ZONE }}
+        gcloud container clusters get-credentials ${{ secrets.CLUSTER_NAME }}
+
+    - name: 'Set up Helm'
+      uses: 'Azure/setup-helm@v1'
+      with:
+        version: 'v3.12.0'
+
+    # - name: "Deploy eoAPI Helm Chart"
+    #   run: |
+    #     helm upgrade --install --namespace ifrc-eoapi-risk --create-namespace \
+    #     --repo https://devseed.com/eoapi-k8s/ \
+    #     -f deploy/helm/eoapi/values.yaml ifrc-eoapi-risk eoapi \
+    #     --version 0.1.2 \
+    #     --set db.settings.secrets.PGPASSWORD="${{ secrets.PGPASSWORD }}" \
+    #     --set db.settings.secrets.POSTGRES_PASSWORD="${{ secrets.PGPASSWORD }}"
+
+    - name: "Deploy JupyterHub"
+      run: |
+        helm upgrade --cleanup-on-fail \
+        --repo https://hub.jupyter.org/helm-chart/ \
+        --install ifrc-eoapi-risk-jupyterhub jupyterhub \
+        --namespace ifrc-eoapi-risk \
+        --create-namespace \
+        --version=3.1.0 \
+        --values deploy/helm/jupyterhub/values.yaml
+
+    - name: Create contacts configmap
+      run: kubectl apply -f deploy/k8s/project-contact.yaml --namespace ifrc-eoapi-risk
