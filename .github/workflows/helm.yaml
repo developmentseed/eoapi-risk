@@ -50,7 +50,7 @@ jobs:
         --namespace ifrc-eoapi-risk \
         --create-namespace \
         --version=3.1.0 \
-        --values deploy/helm/jupyterhub/values.yaml
+        --values deploy/helm/jupyterhub/values.yaml \
         --set hub.config.GitHubOAuthenticator.client_secret="${{ secrets.GH_CLIENT_SECRET }}"
 
     - name: Create contacts configmap
