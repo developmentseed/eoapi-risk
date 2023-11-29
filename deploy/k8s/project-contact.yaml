@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ifrc-eoapi-risk-contacts
+data:
+  project: ifrc-eoapi-risk
+  repo: "github.com/developmentseed/eoapi-risk"
+  contacts: |
+    - name: Sanjay Bhangar
+      email: sanjay@developmentseed.org
+      slack: batpad
+    - name: Tarashish Mishra
+      email: tarashish@developmentseed.org
+      slack: tarashish

@@ -1,0 +1,38 @@
+db:
+  settings:
+    secrets:
+      PGUSER: "dbuser"
+      POSTGRES_USER: "dbuser"
+      PGPASSWORD: ""
+      POSTGRES_PASSWORD: ""
+    resources:
+      requests:
+        storage: "100Mi"
+        cpu: "212m"
+        memory: "512Mi"
+      limits:
+        cpu: "212m"
+        memory: "512Mi"
+
+raster:
+  enabled: true
+  image:
+    name: ghcr.io/stac-utils/titiler-pgstac
+    tag: uvicorn-0.6.0
+  settings:
+    resources:
+      limits:
+        cpu: "500m"
+        memory: "512Mi"
+      requests:
+        cpu: "256m"
+        memory: "512Mi"
+
+ingress:
+  host: eoapi.ifrc-risk.k8s.labs.ds.io
+  tls:
+    enabled: true
+    secretName: eoapi-tls
+    certManager: true
+    certManagerIssuer: letsencrypt-prod
+    cerrtManagerEmail: tarashish@developmentseed.org
