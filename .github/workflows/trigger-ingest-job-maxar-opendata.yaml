@@ -1,4 +1,4 @@
-name: Deploy with Helm
+name: Ingest Maxar open data
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  ingest:
     runs-on: ubuntu-latest
 
     steps:
