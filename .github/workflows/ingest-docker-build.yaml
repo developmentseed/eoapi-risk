@@ -4,7 +4,6 @@ on:
   push:
     branches:
     - main
-    - feat/ingest
     paths:
     - 'ingest/**'  # Run only when files in this path change
   workflow_dispatch: # allows for manual invocation

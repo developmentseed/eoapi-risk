@@ -1,9 +1,6 @@
 name: Ingest Maxar open data
 
 on:
-  push:
-    branches:
-      - feat/ingest
   workflow_dispatch:
 
 jobs:
