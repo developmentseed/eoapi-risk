@@ -18,6 +18,10 @@ def generate(output_dir="."):
     logger.info(f"Found {len(collections)} collections")
     logger.info(collections)
 
+    # loading only 3 collections for testing
+    collections = collections[:3]
+    logger.info(f"Loading collections: {collections}")
+
     logger.info("Creating collections.json file...")
     with open(pathlib.Path(output_dir)/"collections.json", "w") as f:
         for collection in collections:
@@ -29,20 +33,37 @@ def generate(output_dir="."):
 
 
     logger.info("Creating items .json files...")
+    errors = []
     for collection in collections:
         collection_id = "MAXAR_" + collection.id.replace("-","_")
         logger.info(f"Processing items for {collection_id}")
         with open(pathlib.Path(output_dir)/f"{collection_id}_items.json", "w") as f:
-
             # Each Collection has collections
-            for c in collection.get_collections():
-
-                # Loop through each items
-                # edit items and save into a top level collection JSON file
-                for item in c.get_all_items():
-                    item_dict = item.make_asset_hrefs_absolute().to_dict()
-                    item_dict["links"] = []
-                    item_dict["collection"] = collection_id
-                    item_dict["id"] = item.id.replace("/", "_")
-                    item_str = json.dumps(item_dict)
-                    f.write(item_str + "\n")
+            try:
+                for c in collection.get_collections():
+                    try:
+                        # Loop through each items
+                        # edit items and save into a top level collection JSON file
+                        for item in c.get_all_items():
+                            item_dict = item.make_asset_hrefs_absolute().to_dict()
+                            item_dict["links"] = []
+                            item_dict["collection"] = collection_id
+                            item_dict["id"] = item.id.replace("/", "_")
+                            item_str = json.dumps(item_dict)
+                            f.write(item_str + "\n")
+                    except Exception as e:
+                        logger.info(f"Error: {e}")
+                        errors.append({
+                            "collection": collection_id,
+                            "child_collection": c.id,
+                            "error": e
+                        })
+                        continue
+            except Exception as e:
+                logger.info(f"Error: {e}")
+                errors.append({
+                    "collection": collection_id,
+                    "child_collection": None,
+                    "error": e
+                })
+                continue
