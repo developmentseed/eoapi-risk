@@ -1,0 +1,32 @@
+name: Auto delete old images from GCR
+
+on:
+  schedule:
+    - cron: '0 0 */1 * *' # runs daily
+  workflow_dispatch: # allows for manual invocation
+
+env:
+  PROJECT_ID: ${{ secrets.PROJECT_ID }}
+
+jobs:
+  gcr-cleaner:
+    runs-on: 'ubuntu-latest'
+    steps:
+      - name: Google Auth
+        uses: 'google-github-actions/auth@v1'
+        with:
+          credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
+
+      - name: Get access token from Cloud SDK
+        id: gcloud_access_token
+        run: |
+          access_token=$(gcloud auth application-default print-access-token --project ${{ env.PROJECT_ID }})
+          echo "::add-mask::$access_token"
+          echo "::set-output name=access_token::$access_token"
+
+      - uses: 'docker://us-docker.pkg.dev/gcr-cleaner/gcr-cleaner/gcr-cleaner-cli'
+        with:
+          args: >-
+            -repo=gcr.io/${{ env.PROJECT_ID }}/eoapi-risk-ingest
+            -token=${{ steps.gcloud_access_token.outputs.access_token }}
+            -keep=3

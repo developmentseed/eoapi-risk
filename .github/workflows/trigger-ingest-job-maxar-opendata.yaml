@@ -1,0 +1,35 @@
+name: Ingest Maxar open data
+
+on:
+  push:
+    branches:
+      - feat/ingest
+  workflow_dispatch:
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - id: 'auth'
+      uses: 'google-github-actions/auth@v1'
+      with:
+        credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
+
+    - name: 'Set up Cloud SDK'
+      uses: 'google-github-actions/setup-gcloud@v1'
+    - name: Configure kubectl
+      run: |
+        gcloud components install gke-gcloud-auth-plugin
+        gcloud config set project ${{ secrets.PROJECT_ID }}
+        gcloud config set compute/zone ${{ secrets.COMPUTE_ZONE }}
+        gcloud container clusters get-credentials ${{ secrets.CLUSTER_NAME }}
+
+    - name: Trigger Maxar open data ingestion
+      run: |
+        kubectl -n  ifrc-eoapi-risk delete --ignore-not-found=true job eoapi-ingest-maxar-opendata
+        kubectl -n  ifrc-eoapi-risk apply -f ingest/datasets/maxar_opendata/job.yaml
+        echo "Job started; check the logs by running this command: 'kubectl -n  ifrc-eoapi-risk logs -f jobs/eoapi-ingest-maxar-opendata'"
