@@ -1,7 +1,7 @@
 singleuser:
   # Base image used for spawning user's notebook servers
   image:
-    name: jupyter/minimal-notebook
+    name: quay.io/jupyter-remote-desktop-proxy/qgis
     tag: latest
   cmd: null
 
