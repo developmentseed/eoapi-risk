@@ -4,6 +4,7 @@ on:
   push:
     branches:
     - main
+    - feat/qgis
   workflow_dispatch:
 
 jobs:
