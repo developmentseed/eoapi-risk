@@ -6,7 +6,5 @@ mkdir -p $dataOutput
 
 # run script
 
-python src/run.py --iso3_country=AFG \
-  --save_local \
-  --path_local=$dataOutput
+python src/run.py --path_local=$dataOutput
 
