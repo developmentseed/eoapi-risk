@@ -22,8 +22,6 @@ def get_link():
 
 
 def download_data(link, file_tmp_path):
-    print(link)
-    print(file_tmp_path)
     file_gpkg = file_tmp_path[:-3]
     block_size = 1024
     response = requests.get(link, stream=True)
