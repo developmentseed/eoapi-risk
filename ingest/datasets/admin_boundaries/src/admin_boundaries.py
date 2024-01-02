@@ -4,6 +4,9 @@ import pandas as pd
 import logging
 from joblib import Parallel, delayed
 from os import makedirs
+import json
+from datetime import datetime
+import pystac
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -23,13 +26,18 @@ RENAME_COLUMNS = {
     "HASC_3": "adm3_iso",
     "NAME_4": "adm4_name",
 }
+STAC_VERSION = "1.0.0"
 
 
-def gdf2file(gdf, save_local, path_local, name_file):
-    if not save_local:
-        return
+def gdf2file(df, path_local, name_file):
     makedirs(path_local, exist_ok=True)
-    gdf.to_file(f"{path_local}/{name_file}.geojson", driver="GeoJSON")
+    if type(df) is pd.DataFrame:
+        data = json.loads(df.to_json(orient="records"))
+    else:
+        data = json.loads(df.to_json()).get("features", [])
+    content = "\n".join(json.dumps(i) for i in data)
+    with open(f"{path_local}/{name_file}", "w") as f:
+        f.write(content)
 
 
 def dowload_gadm_data(iso3, adm, save_local, path_local):
@@ -37,6 +45,35 @@ def dowload_gadm_data(iso3, adm, save_local, path_local):
     name_file = f"{iso3}_{adm}"
     try:
         gdf = gpd.read_file(gadm_url)
+        df = pd.DataFrame()
+        bbox = list(gdf.total_bounds)
+        # collection
+        links_ = {"href": gadm_url, "rel": gadm_url, "title": f"boundary_{iso3}_{adm}"}
+        df = pd.DataFrame(
+            {
+                "type": ["Collection"],
+                "id": [f"boundary_{iso3}_{adm}"],
+                "link": [json.dumps(links_)],
+                "stac_version": [STAC_VERSION],
+                "title": [f"geoboundaries from {iso3}, level {adm}"],
+                "description": [f"Geo boundaries (GADM) from {iso3}, level {adm}"],
+                "license": ["CC-BY-SA-2.0"],
+                "extent": [
+                    json.dumps(
+                        {
+                            "spatial": pystac.SpatialExtent([[*bbox]]).to_dict(),
+                            "temporal": pystac.TemporalExtent([[None, None]]).to_dict(),
+                        }
+                    )
+                ],
+            }
+        )
+        # items
+        gdf["stac_version"] = STAC_VERSION
+        gdf["bbox"] = json.dumps(bbox)
+        gdf["link"] = json.dumps([links_])
+        gdf["assets"] = json.dumps(links_)
+
         # clear data
         if adm == 0:
             gdf["ID"] = gdf["GID_0"]
@@ -48,13 +85,22 @@ def dowload_gadm_data(iso3, adm, save_local, path_local):
 
         if rename_columns:
             gdf = gdf.rename(columns=rename_columns)
-            gdf = gdf[[*list(rename_columns.values()), "geometry"]]
+            gdf = gdf[
+                [
+                    *list(rename_columns.values()),
+                    "stac_version",
+                    "bbox",
+                    "link",
+                    "assets",
+                    "geometry",
+                ]
+            ]
 
-        gdf2file(gdf, save_local, f"{path_local}/tmp", name_file)
-        return gdf
+        # gdf2file(gdf, f"{path_local}/tmp", name_file)
+        return gdf, df
     except Exception as ex:
         logger.error(f"no data for {name_file}\n\t{ex}")
-    return gpd.GeoDataFrame(columns=["geometry"], geometry="geometry")
+    return gpd.GeoDataFrame(columns=["geometry"], geometry="geometry"), pd.DataFrame()
 
 
 def run(iso3_country, save_local, path_local):
@@ -66,11 +112,16 @@ def run(iso3_country, save_local, path_local):
         for (iso3, adm) in tqdm(gadm_combinations, desc="Download data")
     )
     # clear list_gdf
-    list_gdf = [i for i in list_gdf if not i.empty]
-    gdf = pd.concat(list_gdf)
+    gdf = pd.concat([igdf for (igdf, _) in list_gdf if not igdf.empty])
+    df = pd.concat(
+        [idf for (_, idf) in list_gdf if not idf.empty], ignore_index=True, axis=0
+    )
+
     # clear columns
     gdf_columns = list(gdf.columns)
     select_columns = [k for k in RENAME_COLUMNS.values() if k in gdf_columns]
     gdf = gdf[[*select_columns, "geometry"]]
-    # save file
-    gdf2file(gdf, True, path_local, "admin_boundaries")
+    # save items
+    gdf2file(gdf, path_local, "items.json")
+    # save collections
+    gdf2file(df, path_local, "collections.json")
