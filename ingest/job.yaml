@@ -1,32 +1,21 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  # name should be of the form: eoapi-ingest-<dataset-name>
-  name: eoapi-ingest-maxar-opendata
+  name: eoapi-ingest-datasets
 spec:
   template:
     spec:
       containers:
       # name should be of the form: eoapi-ingest-<dataset-name>
-      - name: eoapi-ingest-maxar-opendata
+      - name: eoapi-ingest-datasets
         image: gcr.io/devseed-labs/eoapi-risk-ingest:latest
         imagePullPolicy: Always
-        ### commands to run to ingest data
-        # command: ["sleep", "infinity"]
+        ### commands to run to ingest all datasets, check config.py
         command:
         - sh
         - -c
         - |
-          for dataset in datasets/*; do
-            if [ -d "$dataset" ]; then
-              python entrypoint.py $dataset
-              cat /data/*.json > /data/items.json
-              pypgstac load collections /data/collections.json --method insert_ignore
-              pypgstac load items /data/items.json --method insert_ignore
-              rm -rf /data/*
-            fi
-          done
-        ### end commands to run to ingest data
+          ./entrypoint.sh
         env:
         - name: PGHOST
           value: pgstac

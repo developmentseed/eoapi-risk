@@ -5,3 +5,4 @@ RUN pip install -r /requirements.txt
 WORKDIR /app
 COPY datasets datasets
 COPY *.py .
+COPY entrypoint.sh .

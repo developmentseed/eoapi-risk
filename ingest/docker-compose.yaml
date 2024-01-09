@@ -6,4 +6,18 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-    - ./:/app/
+      - ./:/app/
+    environment:
+      PGUSER: 'postgres'
+      POSTGRES_PASSWORD: '1234'
+      DB_HOST: 'db'
+      DB_PORT: '5432'
+  db:
+    image: ghcr.io/stac-utils/pgstac:v0.7.1
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./pgstac-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: 'postgres'
+      POSTGRES_PASSWORD: '1234'
