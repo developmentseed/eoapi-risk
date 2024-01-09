@@ -36,4 +36,4 @@ jobs:
       with:
         context: ingest
         push: true
-        tags: gcr.io/${{ env.PROJECT_ID }}/${{ env.IMAGE }}:${{ github.ref == 'refs/heads/main' && 'latest' || github.sha }}
+        tags: gcr.io/${{ env.PROJECT_ID }}/${{ env.IMAGE }}:${{ github.ref == 'refs/heads/main' && 'latest' || github.sha[0:7] }}
