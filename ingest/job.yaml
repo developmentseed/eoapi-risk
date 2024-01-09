@@ -6,16 +6,20 @@ spec:
   template:
     spec:
       containers:
-      # name should be of the form: eoapi-ingest-<dataset-name>
       - name: eoapi-ingest-datasets
-        image: gcr.io/devseed-labs/eoapi-risk-ingest:latest
+        image: gcr.io/devseed-labs/eoapi-risk-ingest:{{VERSION}}
         imagePullPolicy: Always
-        ### commands to run to ingest all datasets, check config.py
         command:
         - sh
         - -c
         - |
           ./entrypoint.sh
+          ### individual datasource ingestions
+          # mkdir -p data
+          # python entrypoint.py buildings
+          # cat data/*.json > data/items.json
+          # pypgstac load collections data/collections.json --method insert_ignore
+          # pypgstac load items data/items.json --method insert_ignore
         env:
         - name: PGHOST
           value: pgstac
