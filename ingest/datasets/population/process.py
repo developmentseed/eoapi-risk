@@ -54,21 +54,24 @@ def download_data(link, file_tmp_path):
 def run(path_local):
     link = get_link()
     file_name = link.split("/")[-1]
+    collection = file_name.rsplit(".", 2)[0]
     file_gpkg = download_data(link, f"{path_local}/tmp/{file_name}")
-    gdf = gpd.read_file(file_gpkg)
-    gdf = gdf.to_crs(4326)
-    # add stac fields
-    bbox = list(gdf.total_bounds)
+
+    gdf_items = gpd.read_file(file_gpkg)
+    gdf_items = gdf_items.to_crs(4326)
+
+    # add stac features for collection
+    bbox = list(gdf_items.total_bounds)
     links_ = {
         "href": link,
         "rel": link,
         "title": "Afghanistan: Population Density for 400m H3 Hexagons",
     }
-    df = pd.DataFrame(
+    df_collection = pd.DataFrame(
         {
             "type": ["Collection"],
-            "id": ["Afghanistan: Population Density for 400m H3 Hexagons"],
-            "link": [json.dumps(links_)],
+            "id": [collection],
+            "links": [json.dumps(links_)],
             "stac_version": [STAC_VERSION],
             "title": ["Afghanistan: Population Density for 400m H3 Hexagons"],
             "description": [
@@ -83,23 +86,32 @@ def run(path_local):
                     }
                 )
             ],
+            "license": ["CC-BY-NC-4.0"],
         }
     )
-    gdf["stac_version"] = STAC_VERSION
-    gdf["bbox"] = json.dumps(bbox)
-    gdf["link"] = json.dumps([links_])
-    gdf["assets"] = json.dumps(links_)
-    # save files
+
+    # add stac features for items
+    gdf_items["collection"] = collection
+    gdf_items["stac_version"] = STAC_VERSION
+    gdf_items["bbox"] = gdf_items.geometry.bounds.apply(
+        lambda row: (row["minx"], row["miny"], row["maxx"], row["maxy"]), axis=1
+    )
+    gdf_items["link"] = json.dumps([links_])
+    gdf_items["assets"] = json.dumps(links_)
+
+    # create path_local directory to save files
     makedirs(path_local, exist_ok=True)
-    # sage gdf
+
+    # save items
     gdf_content = "\n".join(
-        json.dumps(i) for i in json.loads(gdf.to_json()).get("features", [])
+        json.dumps(i) for i in json.loads(gdf_items.to_json()).get("features", [])
     )
     with open(f"{path_local}/items.json", "w") as f:
         f.write(gdf_content)
-    # sage df
+
+    # save collections
     df_content = "\n".join(
-        json.dumps(i) for i in json.loads(df.to_json(orient="records"))
+        json.dumps(i) for i in json.loads(df_collection.to_json(orient="records"))
     )
     with open(f"{path_local}/collections.json", "w") as f:
         f.write(df_content)
