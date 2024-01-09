@@ -1,5 +1,4 @@
-name: Ingest datasets
-
+name: Ingest Maxar open data
 on:
   workflow_dispatch:
 

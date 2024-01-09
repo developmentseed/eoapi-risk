@@ -1,3 +1,4 @@
+name: Build Docker image for ingestion jobs and push to GCR
 on:
   push:
     branches:
