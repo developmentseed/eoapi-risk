@@ -30,10 +30,13 @@ jobs:
         username: _json_key
         password: ${{ secrets.GOOGLE_CREDENTIALS }}
 
+    - name: Shorten git SHA
+      id: shorten_sha
+      run: echo "SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_ENV
+
     - name: Build and push Docker image
-      id: docker_build
       uses: docker/build-push-action@v4
       with:
         context: ingest
         push: true
-        tags: gcr.io/${{ env.PROJECT_ID }}/${{ env.IMAGE }}:${{ github.ref == 'refs/heads/main' && 'latest' || github.sha[0:7] }}
+        tags: gcr.io/${{ env.PROJECT_ID }}/${{ env.IMAGE }}:${{ github.ref == 'refs/heads/main' && 'latest' || env.SHORT_SHA }}
