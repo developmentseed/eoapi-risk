@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-dataOutput=data
+dataOutput=/data
 
 for dataset_path in datasets/*; do
     if [ -d "$dataset_path" ]; then
