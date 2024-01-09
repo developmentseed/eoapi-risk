@@ -30,10 +30,10 @@ jobs:
 
     - name: Update version in job.yaml
       run: |
-        sed -i 's/{{VERSION}}/${{ steps.sha.outputs.short_sha }}/g' ingest/datasets/job.yaml
+        sed -i 's/{{VERSION}}/${{ steps.sha.outputs.short_sha }}/g' ingest/job.yaml
 
     - name: Trigger data ingestion
       run: |
         kubectl -n  ifrc-eoapi-risk delete --ignore-not-found=true job eoapi-ingest-datasets
-        kubectl -n  ifrc-eoapi-risk apply -f ingest/datasets/job.yaml
+        kubectl -n  ifrc-eoapi-risk apply -f ingest/job.yaml
         echo "Job started; check the logs by running this command: 'kubectl -n  ifrc-eoapi-risk logs -f jobs/eoapi-ingest-datasets'"
