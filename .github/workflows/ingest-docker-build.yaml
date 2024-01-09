@@ -1,5 +1,3 @@
-name: Build Docker image for ingestion jobs and push to GCR
-
 on:
   push:
     branches:
@@ -39,4 +37,5 @@ jobs:
       with:
         context: ingest
         push: true
-        tags: gcr.io/${{ env.PROJECT_ID }}/${{ env.IMAGE }}:${{ github.ref == 'refs/heads/main' && 'latest' || env.SHORT_SHA }}
+        tags: gcr.io/${{ env.PROJECT_ID }}/${{ env.IMAGE }}:${{ github.ref_name == 'main' && 'latest' || env.SHORT_SHA }}
+
