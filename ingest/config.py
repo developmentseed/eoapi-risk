@@ -24,8 +24,7 @@ DATASETS = {
         "function": "run",
         "params": {
             "iso3_country": ["USA"],
-            "save_local": True,
-            "path_local": "/data",
+            "path_local": "/data/admin_boundaries",
         },
     },
 }

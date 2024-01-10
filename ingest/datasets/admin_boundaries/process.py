@@ -1,12 +1,10 @@
 from tqdm import tqdm
 import geopandas as gpd
-import pandas as pd
 import logging
 from joblib import Parallel, delayed
-from os import makedirs
+from ..utils import run_fio_stac
 import json
-from datetime import datetime
-import pystac
+import os
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -33,18 +31,27 @@ def dowload_gadm_data(iso3, adm, path_local):
     gadm_url = GADM_LINK.format(iso3=iso3, adm=adm)
     try:
         gdf = gpd.read_file(gadm_url)
+        # ##############
         # metadata
+        # ##############
+        item = f"admin_boundaries_{iso3}_adm{adm}".lower()
+        collection = "admin_boundaries"
         title = f"GADM {iso3} Administrative Level {adm} Data Overview"
         description = f"""A concise overview of {iso3} provincial boundaries and identifiers from the GADM database, 
                        focusing on the structure and accuracy of Level {adm} administrative data. Ideal for 
                        geographic and planning applications."""
         license = "Creative Commons Attribution-ShareAlike 2.0"
-        item = f"admin_boundaries_{iso3}_adm{adm}".lower()
-        links_ = {"href": gadm_url, "rel": gadm_url, "title": title}
+        args = {
+            "--id": item,
+            "--datetime": "2023-07-16",
+            "--collection": collection,
+            "--asset-href": gadm_url,
+        }
+        # ##############
         # items
-        gdf["collection"] = "admin_boundaries"
+        ########
+        gdf["collection"] = collection
         gdf["table"] = item
-
         # clear data
         if adm == 0:
             gdf["ID"] = gdf["GID_0"]
@@ -66,10 +73,28 @@ def dowload_gadm_data(iso3, adm, path_local):
             ]
         file_path = f"{path_local}/{item}.geojson"
         gdf.to_file(file_path, driver="GeoJSON")
+        # ##############
+        # save item stac
 
-        return file_path
+        output_json = run_fio_stac(["fio", "stac"], file_path, args)
+
+        output_json["output"]["title"] = title
+        output_json["output"]["description"] = description
+        output_json["output"]["license"] = license
+        output_json["output"]["table"] = item
+        output_json["output"]["links"] = {
+            "href": gadm_url,
+            "rel": gadm_url,
+            "title": title,
+        }
+        stac_path = f"{path_local}/{item}_stac_item_.json"
+
+        with open(stac_path, "w") as file:
+            file.write(json.dumps(output_json["output"]))
+
+        return file_path, stac_path
     except Exception as ex:
-        logger.error(f"no data for  {adm} ({adm}) \n {ex}")
+        logger.error(f"no data for  {iso3} ({adm})\n{ex}")
         return None
 
 
@@ -83,6 +108,7 @@ def run(iso3_country: list, path_local: str):
     # generate links
     gadm_combinations = [(iso3, adm) for iso3 in iso3_country for adm in ADM]
     # process links
+    os.makedirs(path_local, exist_ok=True)
     Parallel(n_jobs=-1)(
         delayed(dowload_gadm_data)(iso3, adm, path_local)
         for (iso3, adm) in tqdm(gadm_combinations, desc="Download data")
