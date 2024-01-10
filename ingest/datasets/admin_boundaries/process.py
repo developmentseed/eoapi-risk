@@ -29,50 +29,21 @@ RENAME_COLUMNS = {
 STAC_VERSION = "1.0.0"
 
 
-def gdf2file(df, path_local, name_file):
-    makedirs(path_local, exist_ok=True)
-    if type(df) is pd.DataFrame:
-        data = json.loads(df.to_json(orient="records"))
-    else:
-        data = json.loads(df.to_json()).get("features", [])
-    content = "\n".join(json.dumps(i) for i in data)
-    with open(f"{path_local}/{name_file}", "w") as f:
-        f.write(content)
-
-
-def dowload_gadm_data(iso3, adm, save_local, path_local):
+def dowload_gadm_data(iso3, adm, path_local):
     gadm_url = GADM_LINK.format(iso3=iso3, adm=adm)
-    name_file = f"{iso3}_{adm}"
     try:
         gdf = gpd.read_file(gadm_url)
-        df = pd.DataFrame()
-        bbox = list(gdf.total_bounds)
-        # collection
-        links_ = {"href": gadm_url, "rel": gadm_url, "title": f"boundary_{iso3}_{adm}"}
-        df = pd.DataFrame(
-            {
-                "type": ["Collection"],
-                "id": [f"boundary_{iso3}_{adm}"],
-                "link": [json.dumps(links_)],
-                "stac_version": [STAC_VERSION],
-                "title": [f"geoboundaries from {iso3}, level {adm}"],
-                "description": [f"Geo boundaries (GADM) from {iso3}, level {adm}"],
-                "license": ["CC-BY-SA-2.0"],
-                "extent": [
-                    json.dumps(
-                        {
-                            "spatial": pystac.SpatialExtent([[*bbox]]).to_dict(),
-                            "temporal": pystac.TemporalExtent([[None, None]]).to_dict(),
-                        }
-                    )
-                ],
-            }
-        )
+        # metadata
+        title = f"GADM {iso3} Administrative Level {adm} Data Overview"
+        description = f"""A concise overview of {iso3} provincial boundaries and identifiers from the GADM database, 
+                       focusing on the structure and accuracy of Level {adm} administrative data. Ideal for 
+                       geographic and planning applications."""
+        license = "Creative Commons Attribution-ShareAlike 2.0"
+        item = f"admin_boundaries_{iso3}_adm{adm}".lower()
+        links_ = {"href": gadm_url, "rel": gadm_url, "title": title}
         # items
-        gdf["stac_version"] = STAC_VERSION
-        gdf["bbox"] = json.dumps(bbox)
-        gdf["link"] = json.dumps([links_])
-        gdf["assets"] = json.dumps(links_)
+        gdf["collection"] = "admin_boundaries"
+        gdf["table"] = item
 
         # clear data
         if adm == 0:
@@ -88,40 +59,31 @@ def dowload_gadm_data(iso3, adm, save_local, path_local):
             gdf = gdf[
                 [
                     *list(rename_columns.values()),
-                    "stac_version",
-                    "bbox",
-                    "link",
-                    "assets",
+                    "collection",
+                    "table",
                     "geometry",
                 ]
             ]
+        file_path = f"{path_local}/{item}.geojson"
+        gdf.to_file(file_path, driver="GeoJSON")
 
-        # gdf2file(gdf, f"{path_local}/tmp", name_file)
-        return gdf, df
+        return file_path
     except Exception as ex:
-        logger.error(f"no data for {name_file}\n\t{ex}")
-    return gpd.GeoDataFrame(columns=["geometry"], geometry="geometry"), pd.DataFrame()
+        logger.error(f"no data for  {adm} ({adm}) \n {ex}")
+        return None
 
 
-def run(iso3_country, save_local, path_local):
+def ingest_stac(collection_path_, data_path_):
+    if not collection_path_:
+        return None
+    print(collection_path_, data_path_)
+
+
+def run(iso3_country: list, path_local: str):
     # generate links
     gadm_combinations = [(iso3, adm) for iso3 in iso3_country for adm in ADM]
     # process links
-    list_gdf = Parallel(n_jobs=-1)(
-        delayed(dowload_gadm_data)(iso3, adm, save_local, path_local)
+    Parallel(n_jobs=-1)(
+        delayed(dowload_gadm_data)(iso3, adm, path_local)
         for (iso3, adm) in tqdm(gadm_combinations, desc="Download data")
     )
-    # clear list_gdf
-    gdf = pd.concat([igdf for (igdf, _) in list_gdf if not igdf.empty])
-    df = pd.concat(
-        [idf for (_, idf) in list_gdf if not idf.empty], ignore_index=True, axis=0
-    )
-
-    # clear columns
-    gdf_columns = list(gdf.columns)
-    select_columns = [k for k in RENAME_COLUMNS.values() if k in gdf_columns]
-    gdf = gdf[[*select_columns, "geometry"]]
-    # save items
-    gdf2file(gdf, path_local, "items.json")
-    # save collections
-    gdf2file(df, path_local, "collections.json")
