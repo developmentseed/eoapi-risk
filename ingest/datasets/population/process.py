@@ -10,6 +10,13 @@ import pystac
 import json
 import pandas as pd
 from os import makedirs
+import sys
+
+# import fio-stac from utils
+current_directory = os.path.dirname(os.path.abspath(__file__))
+parent_directory = os.path.dirname(current_directory)
+sys.path.insert(0, parent_directory)
+from utils import run_fio_stac
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -91,23 +98,27 @@ def run(path_local):
     )
 
     # add stac features for items
-    gdf_items["collection"] = collection
-    gdf_items["stac_version"] = STAC_VERSION
-    gdf_items["bbox"] = gdf_items.geometry.bounds.apply(
-        lambda row: (row["minx"], row["miny"], row["maxx"], row["maxy"]), axis=1
-    )
-    gdf_items["link"] = json.dumps([links_])
-    gdf_items["assets"] = json.dumps(links_)
+    gdf_items.to_file(f"{path_local}/items.geojson", driver='GeoJSON')
 
-    # create path_local directory to save files
-    makedirs(path_local, exist_ok=True)
+    # gdf_items["bbox"] = gdf_items.geometry.bounds.apply(
+    #     lambda row: (row["minx"], row["miny"], row["maxx"], row["maxy"]), axis=1
+    # )
+    # features = json.loads(gdf_items.to_json()).get("features", [])
+    # for feature in features:
+    #     feature['bbox'] = feature['properties']['bbox']
+    #     feature['collection'] = collection
+    #     feature["stac_version"] = STAC_VERSION
+    #     feature["link"] = json.dumps([links_])
+    #     feature["assets"] = json.dumps(links_)
+    #     del feature['properties']['bbox']
 
-    # save items
-    gdf_content = "\n".join(
-        json.dumps(i) for i in json.loads(gdf_items.to_json()).get("features", [])
-    )
-    with open(f"{path_local}/items.json", "w") as f:
-        f.write(gdf_content)
+    # # create path_local directory to save files
+    # makedirs(path_local, exist_ok=True)
+
+    # # save items
+    # gdf_content = "\n".join(features)
+    # with open(f"{path_local}/items.json", "w") as f:
+    #     f.write(gdf_content)
 
     # save collections
     df_content = "\n".join(
