@@ -2,7 +2,7 @@ import subprocess
 import json
 
 
-def run_fio_stac(pre_commands: list, file: str, args: dict):
+def run_cli(pre_commands: list, file: str, args: dict):
     command = [*pre_commands, file]
     for key, value in args.items():
         if key.startswith("--"):
@@ -13,6 +13,9 @@ def run_fio_stac(pre_commands: list, file: str, args: dict):
             if value:
                 command.append(key)
     try:
+        print("#"*40)
+        print(" ".join(command))
+        print("#"*40)
         result = subprocess.run(
             command,
             check=True,
@@ -20,9 +23,14 @@ def run_fio_stac(pre_commands: list, file: str, args: dict):
             stderr=subprocess.PIPE,
             text=True,
         )
-        output = json.loads(result.stdout)
-        error = result.stderr
+        if not result.stdout.strip():
+            output = {}
+        else:
+            output = json.loads(result.stdout)
+
+        return {"output": output}
+
+    except json.JSONDecodeError as json_err:
+        return {"error": "JSON parsing error", "details": str(json_err)}
     except subprocess.CalledProcessError as e:
         return {"error": str(e), "output": e.output, "stderr": e.stderr}
-    # Return output and error as JSON
-    return {"output": output, "error": error}

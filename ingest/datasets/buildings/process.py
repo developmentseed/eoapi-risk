@@ -8,7 +8,7 @@ from tqdm import tqdm
 import zipfile
 from shapely import wkt
 import json
-from ..utils import run_fio_stac
+from ..utils import run_cli
 from os import makedirs
 
 logging.basicConfig(level=logging.INFO)
@@ -130,7 +130,7 @@ def run(path_local):
                 "--asset-href": link,
             }
 
-            output_json = run_fio_stac(["fio", "stac"], file_path, args)
+            output_json = run_cli(["fio", "stac"], file_path, args)
 
             output_json["output"]["title"] = v.get("title")
             output_json["output"]["description"] = v.get("description")

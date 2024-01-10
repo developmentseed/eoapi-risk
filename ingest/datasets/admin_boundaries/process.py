@@ -2,7 +2,7 @@ from tqdm import tqdm
 import geopandas as gpd
 import logging
 from joblib import Parallel, delayed
-from ..utils import run_fio_stac
+from ..utils import run_cli
 import json
 import os
 
@@ -75,7 +75,7 @@ def dowload_gadm_data(iso3, adm, path_local):
         # ##############
         # save item stac
 
-        output_json = run_fio_stac(["fio", "stac"], file_path, args)
+        output_json = run_cli(["fio", "stac"], file_path, args)
 
         output_json["output"]["title"] = title
         output_json["output"]["description"] = description

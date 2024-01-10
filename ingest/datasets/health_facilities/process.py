@@ -6,7 +6,7 @@ from tqdm import tqdm
 import json
 from os import makedirs
 import zipfile
-from ..utils import run_fio_stac
+from ..utils import run_cli
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -79,7 +79,7 @@ def run(path_local):
     # save item stac
     # ##############
 
-    output_json = run_fio_stac(["fio", "stac"], file_path, args)
+    output_json = run_cli(["fio", "stac"], file_path, args)
 
     output_json["output"]["title"] = TITLE
     output_json["output"]["description"] = DESCRIPTION
