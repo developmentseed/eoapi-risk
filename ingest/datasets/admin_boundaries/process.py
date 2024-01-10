@@ -25,6 +25,7 @@ RENAME_COLUMNS = {
     "NAME_4": "adm4_name",
 }
 STAC_VERSION = "1.0.0"
+LICENSE = "Creative Commons Attribution-ShareAlike 2.0"
 
 
 def dowload_gadm_data(iso3, adm, path_local):
@@ -37,10 +38,10 @@ def dowload_gadm_data(iso3, adm, path_local):
         item = f"admin_boundaries_{iso3}_adm{adm}".lower()
         collection = "admin_boundaries"
         title = f"GADM {iso3} Administrative Level {adm} Data Overview"
-        description = f"""A concise overview of {iso3} provincial boundaries and identifiers from the GADM database, 
-                       focusing on the structure and accuracy of Level {adm} administrative data. Ideal for 
-                       geographic and planning applications."""
-        license = "Creative Commons Attribution-ShareAlike 2.0"
+        description = (
+            f"A concise overview of {iso3} provincial boundaries and identifiers from the GADM database, "
+            f"focusing on the structure and accuracy of Level {adm} administrative data. Ideal for  geographic and planning applications."
+        )
         args = {
             "--id": item,
             "--datetime": "2023-07-16",
@@ -50,8 +51,8 @@ def dowload_gadm_data(iso3, adm, path_local):
         # ##############
         # items
         ########
-        gdf["collection"] = collection
-        gdf["table"] = item
+        # gdf["collection"] = collection
+        # gdf["table"] = item
         # clear data
         if adm == 0:
             gdf["ID"] = gdf["GID_0"]
@@ -66,8 +67,6 @@ def dowload_gadm_data(iso3, adm, path_local):
             gdf = gdf[
                 [
                     *list(rename_columns.values()),
-                    "collection",
-                    "table",
                     "geometry",
                 ]
             ]
@@ -80,7 +79,7 @@ def dowload_gadm_data(iso3, adm, path_local):
 
         output_json["output"]["title"] = title
         output_json["output"]["description"] = description
-        output_json["output"]["license"] = license
+        output_json["output"]["license"] = LICENSE
         output_json["output"]["table"] = item
         output_json["output"]["links"] = {
             "href": gadm_url,

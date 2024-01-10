@@ -8,14 +8,16 @@ from tqdm import tqdm
 import zipfile
 from shapely import wkt
 import json
-import pystac
+from ..utils import run_fio_stac
 from os import makedirs
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 REGEX_URL = r'<a\s+(?:[^>]*?\s+)?href="([^"]+)"'
-
+# ##############
+# metadata
+# ##############
 PAGE_SOURCES = {
     "https://data.humdata.org/dataset/hotosm_afg_buildings": {
         "condition": "hotosm_afg_buildings_polygons_gpkg",
@@ -25,6 +27,7 @@ PAGE_SOURCES = {
         "original_extension": "gpkg.zip",
         "case": "zip",
         "filename": "hotosm_afg_buildings_polygons_gpkg",
+        "item": "hotosm_afg_buildings_polygons",
     },
     "https://data.humdata.org/dataset/afghanistan-buildings-footprint-herat-province": {
         "condition": "afghanistan-herat-earthquake-epicenter-googleresearch",
@@ -34,16 +37,11 @@ PAGE_SOURCES = {
         "original_extension": "csv",
         "case": "csv",
         "filename": "afghanistan-buildings-footprint-herat-province",
+        "item": "afghanistan_buildings_footprint_herat_province",
     },
 }
 STAC_VERSION = "1.0.0"
-
-
-def jsonfile(data, path_local, name_file):
-    makedirs(path_local, exist_ok=True)
-    content = "\n".join(json.dumps(i) for i in data)
-    with open(f"{path_local}/{name_file}", "w") as f:
-        f.write(content)
+COLLECTION = "buildings"
 
 
 def get_link(link_, condition):
@@ -102,51 +100,51 @@ def read_file(file_path, case):
 
 
 def run(path_local):
-    list_gdf = []
-    list_df = []
-    for link, v in PAGE_SOURCES.items():
-        source_link = get_link(link, v.get("condition"))
-        if not source_link:
-            logger.error("no link found")
-        files_path = download_data(
-            source_link,
-            f"{path_local}/tmp/{v.get('filename')}.{v.get('original_extension')}",
-            v.get("case"),
-        )
-        gdf = read_file(files_path, v.get("case"))
-        # add stac fields
-        bbox = list(gdf.total_bounds)
-        links_ = {"href": link, "rel": link, "title": v.get("filename")}
-        df = pd.DataFrame(
-            {
-                "type": ["Collection"],
-                "id": [v.get("filename")],
-                "link": [json.dumps(links_)],
-                "stac_version": [STAC_VERSION],
-                "title": [v.get("title")],
-                "description": [v.get("description")],
-                "license": [v.get("license")],
-                "extent": [
-                    json.dumps(
-                        {
-                            "spatial": pystac.SpatialExtent([[*bbox]]).to_dict(),
-                            "temporal": pystac.TemporalExtent([[None, None]]).to_dict(),
-                        }
-                    )
-                ],
-            }
-        )
-        gdf["stac_version"] = STAC_VERSION
-        gdf["bbox"] = json.dumps(bbox)
-        gdf["link"] = json.dumps([links_])
-        gdf["assets"] = json.dumps(links_)
-        list_df.append(df)
-        list_gdf.append(gdf)
+    os.makedirs(path_local, exist_ok=True)
+    for link, v in tqdm(list(PAGE_SOURCES.items()), desc="Processing sources"):
+        try:
+            source_link = get_link(link, v.get("condition"))
+            item = f"{COLLECTION}_{v.get('item')}".lower()
 
-    # save items
-    # items
-    gdf = pd.concat(list_gdf)
-    jsonfile(json.loads(gdf.to_json()).get("features", []), path_local, "items.json")
-    # collections
-    df = pd.concat(list_df, ignore_index=True, axis=0)
-    jsonfile(json.loads(df.to_json(orient="records")), path_local, "collections.json")
+            if not source_link:
+                logger.error("no link found")
+            files_path = download_data(
+                source_link,
+                f"{path_local}/{v.get('filename')}.{v.get('original_extension')}",
+                v.get("case"),
+            )
+            gdf = read_file(files_path, v.get("case"))
+            # ##############
+            # items
+            # ##############
+            links_ = {"href": link, "rel": link, "title": v.get("filename")}
+            file_path = f"{path_local}/{item}.geojson"
+            gdf.to_file(file_path, driver="GeoJSON")
+            # ##############
+            # save item stac
+            # ##############
+            args = {
+                "--id": v.get("item"),
+                "--datetime": "2023-07-16",
+                "--collection": COLLECTION,
+                "--asset-href": link,
+            }
+
+            output_json = run_fio_stac(["fio", "stac"], file_path, args)
+
+            output_json["output"]["title"] = v.get("title")
+            output_json["output"]["description"] = v.get("description")
+            output_json["output"]["license"] = v.get("license")
+            output_json["output"]["table"] = item
+            output_json["output"]["links"] = {
+                "href": link,
+                "rel": links_,
+                "title": v.get("title"),
+            }
+            stac_path = f"{path_local}/{item}_stac_item_.json"
+
+            with open(stac_path, "w") as file:
+                file.write(json.dumps(output_json["output"]))
+
+        except Exception as ex:
+            logger.error(ex)

@@ -7,7 +7,7 @@ DATASETS = {
     "buildings": {
         "module": "datasets.buildings.process",
         "function": "run",
-        "params": {"path_local": "/data"},
+        "params": {"path_local": "/data/buildings"},
     },
     "health_facilities": {
         "module": "datasets.health_facilities.process",
