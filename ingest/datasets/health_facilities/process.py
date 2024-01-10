@@ -64,6 +64,9 @@ def run(path_local):
     file_gpkg = download_data(link, f"{path_local}/{file_name}")
     gdf = gpd.read_file(file_gpkg)
     gdf = gdf.to_crs(4326)
+    gdf["id"] = gdf["fid"]
+    gdf_columns = [i for i in list(gdf.columns) if i not in ["fid"]]
+    gdf = gdf[[*gdf_columns, "geometry"]]
     # ##############
     # metadata
     # ##############
@@ -76,7 +79,14 @@ def run(path_local):
     file_path = f"{path_local}/{ITEM}.geojson"
     gdf.to_file(file_path, driver="GeoJSON")
 
-    save_postgis(gdf=gdf, table_name=ITEM, if_exists="replace", index=True, schema="pgstac", table_id="id", )
+    save_postgis(
+        gdf=gdf,
+        table_name=ITEM,
+        if_exists="replace",
+        index=True,
+        schema="pgstac",
+        table_id="id",
+    )
 
     # ##############
     # save item stac
@@ -100,4 +110,8 @@ def run(path_local):
     #################
     # Run: pypgstac load collections
     #################
-    output_json = run_cli(["pypgstac", "load", "collections"], stac_item_path, {"--method": "insert_ignore"}, )
+    output_json = run_cli(
+        ["pypgstac", "load", "collections"],
+        stac_item_path,
+        {"--method": "insert_ignore"},
+    )

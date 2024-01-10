@@ -91,10 +91,14 @@ def read_file(file_path, case):
         df["geometry"] = df["geometry"].apply(wkt.loads)
         gdf = gpd.GeoDataFrame(df, geometry="geometry")
         gdf = gdf.set_crs(epsg=4326)
-
+        gdf["id"] = list(range(gdf.shape[0]))
     else:
         gdf = gpd.read_file(file_path)
         gdf = gdf.to_crs(4326)
+        gdf["id"] = gdf["fid"]
+
+    gdf_columns = [i for i in list(gdf.columns) if i not in ["fid"]]
+    gdf = gdf[[*gdf_columns, "geometry"]]
     return gdf
 
 
