@@ -1,8 +1,8 @@
 import subprocess
 import json
 
-def run_fio_stac(args):
-    command = ["fio", "stac"]
+def run_fio_stac(file , args):
+    command = ["fio", "stac", file]
     for key, value in args.items():
         if key.startswith('--'):
             command.append(key)
