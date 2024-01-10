@@ -13,9 +13,9 @@ def run_fio_stac(file , args):
                 command.append(key)
     try:
         result = subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        output = result.stdout
+        output = json.loads(result.stdout)
         error = result.stderr
     except subprocess.CalledProcessError as e:
-        return json.dumps({"error": str(e), "output": e.output, "stderr": e.stderr})
+        return {"error": str(e), "output": e.output, "stderr": e.stderr}
     # Return output and error as JSON
-    return json.dumps({"output": output, "error": error})
+    return {"output": output, "error": error}

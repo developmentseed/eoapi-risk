@@ -61,68 +61,33 @@ def download_data(link, file_tmp_path):
 def run(path_local):
     link = get_link()
     file_name = link.split("/")[-1]
-    collection = file_name.rsplit(".", 2)[0]
+    id_stac_item = file_name.rsplit(".", 2)[0]
     file_gpkg = download_data(link, f"{path_local}/tmp/{file_name}")
-
     gdf_items = gpd.read_file(file_gpkg)
     gdf_items = gdf_items.to_crs(4326)
 
-    # add stac features for collection
-    bbox = list(gdf_items.total_bounds)
-    links_ = {
+    # save datasets
+    geo_file = f"{path_local}/items.geojson"
+    gdf_items.to_file(geo_file, driver="GeoJSON")
+
+    # generate stac item
+    description = "Built from Kontur Population, Global Population Density for 400m H3 Hexagons Vector H3 hexagons with population counts at 400m resolution"
+    title = "Afghanistan, Population Density for 400m H3 Hexagons"
+    license = "Creative Commons Attribution International"
+    args = {
+        "--id": id_stac_item,
+        "--datetime": "2022-06-30",
+        "--collection": "population",
+        "--asset-href": link,
+    }
+    output_json = run_fio_stac(geo_file, args)
+    output_json["output"]["description"] = description
+    output_json["output"]["title"] = title
+    output_json["output"]["license"] = license
+    output_json["output"]["links"] = {
         "href": link,
         "rel": link,
-        "title": "Afghanistan: Population Density for 400m H3 Hexagons",
+        "title": title,
     }
-    df_collection = pd.DataFrame(
-        {
-            "type": ["Collection"],
-            "id": [collection],
-            "links": [json.dumps(links_)],
-            "stac_version": [STAC_VERSION],
-            "title": ["Afghanistan: Population Density for 400m H3 Hexagons"],
-            "description": [
-                "Built from Kontur Population: Global Population Density for 400m H3 Hexagons Vector H3 hexagons with population counts at 400m resolution."
-            ],
-            "license": ["Creative Commons Attribution International"],
-            "extent": [
-                json.dumps(
-                    {
-                        "spatial": pystac.SpatialExtent([[*bbox]]).to_dict(),
-                        "temporal": pystac.TemporalExtent([[None, None]]).to_dict(),
-                    }
-                )
-            ],
-            "license": ["CC-BY-NC-4.0"],
-        }
-    )
-
-    # add stac features for items
-    gdf_items.to_file(f"{path_local}/items.geojson", driver='GeoJSON')
-
-    # gdf_items["bbox"] = gdf_items.geometry.bounds.apply(
-    #     lambda row: (row["minx"], row["miny"], row["maxx"], row["maxy"]), axis=1
-    # )
-    # features = json.loads(gdf_items.to_json()).get("features", [])
-    # for feature in features:
-    #     feature['bbox'] = feature['properties']['bbox']
-    #     feature['collection'] = collection
-    #     feature["stac_version"] = STAC_VERSION
-    #     feature["link"] = json.dumps([links_])
-    #     feature["assets"] = json.dumps(links_)
-    #     del feature['properties']['bbox']
-
-    # # create path_local directory to save files
-    # makedirs(path_local, exist_ok=True)
-
-    # # save items
-    # gdf_content = "\n".join(features)
-    # with open(f"{path_local}/items.json", "w") as f:
-    #     f.write(gdf_content)
-
-    # save collections
-    df_content = "\n".join(
-        json.dumps(i) for i in json.loads(df_collection.to_json(orient="records"))
-    )
-    with open(f"{path_local}/collections.json", "w") as f:
-        f.write(df_content)
+    with open(f"{path_local}/stac_item.json", "w") as file:
+        file.write(json.dumps(output_json["output"]))
