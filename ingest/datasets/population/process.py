@@ -10,14 +10,12 @@ import pystac
 import json
 import pandas as pd
 from os import makedirs
-from ..utils import run_cli
+from ..utils import run_cli, save_postgres
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 PAGE_LINK = "https://data.humdata.org/dataset/kontur-population-afghanistan"
-PAGE_LINK = "https://data.humdata.org/dataset/kontur-population-uruguay"
-
 REGEX_URL = r'<a\s+(?:[^>]*?\s+)?href="(http[s]?://[^"]*)"'
 STAC_VERSION = "1.0.0"
 COLLECTION = "population"
@@ -79,6 +77,20 @@ def run(path_local):
     }
     file_path = f"{path_local}/{ITEM}.geojson"
     gdf.to_file(file_path, driver="GeoJSON")
+    
+    # #################
+    # save in database
+    # #################
+    print("Saving dataset in DB..")
+    save_postgres(
+        df=gdf,
+        table_name=ITEM,
+        if_exists="replace",
+        index=True,
+        schema="pgstac",
+        table_id="id"
+    )
+    
     # #################
     # save item stac
     # #################
