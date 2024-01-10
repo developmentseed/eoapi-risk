@@ -1,4 +1,3 @@
-import os
 import pandas as pd
 import geopandas as gpd
 import logging
@@ -8,7 +7,7 @@ from tqdm import tqdm
 import zipfile
 from shapely import wkt
 import json
-from ..utils import run_cli
+from ..utils import run_cli, save_postgis
 from os import makedirs
 
 logging.basicConfig(level=logging.INFO)
@@ -67,7 +66,7 @@ def download_data(link, file_tmp_path, case):
     response = requests.get(link, stream=True)
     total_size_in_bytes = int(response.headers.get("content-length", 0))
     # create folter
-    os.makedirs("/".join(file_tmp_path.split("/")[:-1]), exist_ok=True)
+    makedirs("/".join(file_tmp_path.split("/")[:-1]), exist_ok=True)
     with open(file_tmp_path, "wb") as file, tqdm(
         desc=file_tmp_path,
         total=total_size_in_bytes,
@@ -100,7 +99,7 @@ def read_file(file_path, case):
 
 
 def run(path_local):
-    os.makedirs(path_local, exist_ok=True)
+    makedirs(path_local, exist_ok=True)
     for link, v in tqdm(list(PAGE_SOURCES.items()), desc="Processing sources"):
         try:
             source_link = get_link(link, v.get("condition"))
@@ -120,6 +119,14 @@ def run(path_local):
             links_ = {"href": link, "rel": link, "title": v.get("filename")}
             file_path = f"{path_local}/{item}.geojson"
             gdf.to_file(file_path, driver="GeoJSON")
+            save_postgis(
+                gdf=gdf,
+                table_name=item,
+                if_exists="replace",
+                index=True,
+                schema="pgstac",
+                table_id="id",
+            )
             # ##############
             # save item stac
             # ##############
@@ -141,10 +148,17 @@ def run(path_local):
                 "rel": links_,
                 "title": v.get("title"),
             }
-            stac_path = f"{path_local}/{item}_stac_item_.json"
+            stac_item_path = f"{path_local}/{item}_stac_item_.json"
 
-            with open(stac_path, "w") as file:
+            with open(stac_item_path, "w") as file:
                 file.write(json.dumps(output_json["output"]))
-
+            #################
+            # Run: pypgstac load collections
+            #################
+            output_json = run_cli(
+                ["pypgstac", "load", "collections"],
+                stac_item_path,
+                {"--method": "insert_ignore"},
+            )
         except Exception as ex:
             logger.error(ex)

@@ -6,7 +6,7 @@ from tqdm import tqdm
 import json
 from os import makedirs
 import zipfile
-from ..utils import run_cli
+from ..utils import run_cli, save_postgis
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -75,6 +75,9 @@ def run(path_local):
     }
     file_path = f"{path_local}/{ITEM}.geojson"
     gdf.to_file(file_path, driver="GeoJSON")
+
+    save_postgis(gdf=gdf, table_name=ITEM, if_exists="replace", index=True, schema="pgstac", table_id="id", )
+
     # ##############
     # save item stac
     # ##############
@@ -90,7 +93,11 @@ def run(path_local):
         "rel": link,
         "title": TITLE,
     }
-    stac_path = f"{path_local}/{ITEM}_stac_item_.json"
+    stac_item_path = f"{path_local}/{ITEM}_stac_item_.json"
 
-    with open(stac_path, "w") as file:
+    with open(stac_item_path, "w") as file:
         file.write(json.dumps(output_json["output"]))
+    #################
+    # Run: pypgstac load collections
+    #################
+    output_json = run_cli(["pypgstac", "load", "collections"], stac_item_path, {"--method": "insert_ignore"}, )
