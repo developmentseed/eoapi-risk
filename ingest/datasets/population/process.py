@@ -10,7 +10,7 @@ import pystac
 import json
 import pandas as pd
 from os import makedirs
-from ..utils import run_cli, save_postgres
+from ..utils import run_cli, save_postgis
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -81,19 +81,14 @@ def run(path_local):
     # #################
     # save in database
     # #################
-    print("Saving dataset in DB..")
-    save_postgres(
-        df=gdf,
-        table_name=ITEM,
-        if_exists="replace",
-        index=True,
-        schema="pgstac",
-        table_id="id"
-    )
-    
+    logger.info("Saving dataset in DB...")
+    gdf['id'] = gdf.index
+    save_postgis(gdf=gdf, table_name=ITEM, if_exists="replace", index=True, schema="pgstac", table_id="id", )
+
     # #################
     # save item stac
     # #################
+    logger.info("Running fio stac for dataset...")
     output_json = run_cli(["fio", "stac"], file_path, args)
     output_json["output"]["title"] = TITLE
     output_json["output"]["description"] = DESCRIPTION
@@ -112,6 +107,7 @@ def run(path_local):
     #################
     # Run: pypgstac load collections
     #################
+    logger.info("Importing item/colletion to pgstac...")
     output_json = run_cli(
         ["pypgstac", "load", "collections"],
         stac_item_path,
