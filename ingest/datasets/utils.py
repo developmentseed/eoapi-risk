@@ -4,12 +4,10 @@ import os
 from sqlalchemy import create_engine as sqlalchemy_create_engine, inspect, exc
 import logging
 import geopandas as gpd
-import pandas as pd
-import datetime as dt
 from psycopg2 import sql, errors
 from shapely.geometry import box
-from typing import Optional, List
 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 db_engine = sqlalchemy_create_engine(os.environ["DATABASE_URL"])
@@ -73,8 +71,8 @@ def exist_table(table_name: str, database_url: str = ""):
         raise
 
 
-def save_postgres(
-    df: pd.DataFrame,
+def save_postgis(
+    gdf: gpd.GeoDataFrame,
     table_name: str,
     database_url: str = "",
     if_exists: str = "replace",
@@ -83,28 +81,32 @@ def save_postgres(
     table_id: str = "id",
     **kwargs,
 ):
-    """Save dataframe into postgres table.
+    """Save a GeoDataFrame to PostGIS.
 
     Args:
-        df (pd.DataFrame): Dataframe
+        gdf (object): A GeoDataFrame object.
         table_name (str): The name of the table to be created in PostGIS.
         database_url (str, optional): The URL for the database connection. Defaults to an environment variable called DATABASE_URL if not provided explicitly.
         if_exists (str, optional): Specifies what should happen when there is already a table with the same name that would be created by save_postgis(). Valid options are "fail", "replace", or "append". Defaults to 'replace'.
         index (bool, optional): Used to Save the index of a dataframe as an additional column in the database.
         schema (str, optional): Used to Specify the schema of the table. Defaults to 'public'
         table_id (str, optional): Used to Specify the id for table. Defaults to 'id'
-
-    Returns:
-        dict: statusCode
     """
     try:
         if not database_url:
             database_url = os.environ.get("DATABASE_URL")
 
+        # make add global bbox as a geometry to non-spatial tables so they show up in pygeoapi
+        if not isinstance(gdf, gpd.GeoDataFrame):
+            logger.debug("Adding geometry field to non-geo dataframe")
+            gdf["geometry"] = box(-180, -90, 180, 90)
+            gdf = gpd.GeoDataFrame(gdf, crs="EPSG:4326", geometry="geometry")
+
         engine = create_engine(database_url)
         has_table = exist_table(table_name)
 
-        df.to_sql(
+        logger.debug(f"saving data to {table_name} in postgis")
+        gdf.to_postgis(
             con=engine,
             name=table_name,
             if_exists=if_exists,
