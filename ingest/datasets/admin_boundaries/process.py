@@ -4,7 +4,7 @@ import logging
 from joblib import Parallel, delayed
 from ..utils import run_cli, save_postgis
 import json
-import os
+from os import makedirs, environ
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -105,7 +105,7 @@ def dowload_gadm_data(iso3, adm, path_local):
         output_json = run_cli(
             ["pypgstac", "load", "collections"],
             stac_item_path,
-            {"--method": "insert_ignore"},
+            {"--method": "insert_ignore", "--dsn": environ["DATABASE_URL"]},
         )
     except Exception as ex:
         logger.error(f"no data for  {iso3} ({adm})\n{ex}")
@@ -121,7 +121,7 @@ def run(iso3_country: list, path_local: str):
     # generate links
     gadm_combinations = [(iso3, adm) for iso3 in iso3_country for adm in ADM]
     # process links
-    os.makedirs(path_local, exist_ok=True)
+    makedirs(path_local, exist_ok=True)
     Parallel(n_jobs=-1)(
         delayed(dowload_gadm_data)(iso3, adm, path_local)
         for (iso3, adm) in tqdm(gadm_combinations, desc="Download data")

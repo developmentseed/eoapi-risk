@@ -8,7 +8,7 @@ import zipfile
 from shapely import wkt
 import json
 from ..utils import run_cli, save_postgis
-from os import makedirs
+from os import makedirs, environ
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -95,10 +95,8 @@ def read_file(file_path, case):
     else:
         gdf = gpd.read_file(file_path)
         gdf = gdf.to_crs(4326)
-        gdf["id"] = gdf["fid"]
+        gdf["id"] = list(range(gdf.shape[0]))
 
-    gdf_columns = [i for i in list(gdf.columns) if i not in ["fid"]]
-    gdf = gdf[[*gdf_columns, "geometry"]]
     return gdf
 
 
@@ -162,7 +160,7 @@ def run(path_local):
             output_json = run_cli(
                 ["pypgstac", "load", "collections"],
                 stac_item_path,
-                {"--method": "insert_ignore"},
+                {"--method": "insert_ignore", "--dsn": environ["DATABASE_URL"]},
             )
         except Exception as ex:
             logger.error(ex)

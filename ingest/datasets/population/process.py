@@ -1,4 +1,4 @@
-import os
+from os import  makedirs, environ
 import geopandas as gpd
 import logging
 import requests
@@ -6,11 +6,8 @@ import re
 from tqdm import tqdm
 import gzip
 import shutil
-import pystac
 import json
-import pandas as pd
-from os import makedirs
-from ..utils import run_cli, save_postgres
+from ..utils import run_cli, save_postgis
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -40,7 +37,7 @@ def download_data(link, file_tmp_path):
 
     total_size_in_bytes = int(response.headers.get("content-length", 0))
     # create folter
-    os.makedirs("/".join(file_tmp_path.split("/")[:-1]), exist_ok=True)
+    makedirs("/".join(file_tmp_path.split("/")[:-1]), exist_ok=True)
     with open(file_tmp_path, "wb") as file, tqdm(
         desc=file_tmp_path,
         total=total_size_in_bytes,
@@ -82,8 +79,8 @@ def run(path_local):
     # save in database
     # #################
     print("Saving dataset in DB..")
-    save_postgres(
-        df=gdf,
+    save_postgis(
+        gdf=gdf,
         table_name=ITEM,
         if_exists="replace",
         index=True,
@@ -115,5 +112,5 @@ def run(path_local):
     output_json = run_cli(
         ["pypgstac", "load", "collections"],
         stac_item_path,
-        {"--method": "insert_ignore"},
+        {"--method": "insert_ignore", "--dsn": environ["DATABASE_URL"]},
     )
