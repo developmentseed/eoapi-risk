@@ -4,6 +4,7 @@ import json
 import logging
 import pathlib
 import pystac
+from os import makedirs
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -12,6 +13,7 @@ logger = logging.getLogger(__name__)
 def generate(output_dir="."):
     """Generate STAC Collections and Items files for Maxar Open Data."""
     logger.info("Connecting to static catalog...")
+    makedirs(output_dir, exist_ok=True)
     catalog = pystac.Catalog.from_file(
         "https://maxar-opendata.s3.amazonaws.com/events/catalog.json"
     )

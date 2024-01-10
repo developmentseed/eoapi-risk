@@ -2,17 +2,17 @@ DATASETS = {
     "maxar_opendata": {
         "module": "datasets.maxar_opendata.process",
         "function": "generate",
-        "params": {"output_dir": "/data"},
+        "params": {"output_dir": "/data/health_facilities"},
     },
     "buildings": {
         "module": "datasets.buildings.process",
         "function": "run",
-        "params": {"path_local": "/data"},
+        "params": {"path_local": "/data/buildings"},
     },
     "health_facilities": {
         "module": "datasets.health_facilities.process",
         "function": "run",
-        "params": {"path_local": "/data"},
+        "params": {"path_local": "/data/health_facilities"},
     },
     "population": {
         "module": "datasets.population.process",
@@ -24,8 +24,7 @@ DATASETS = {
         "function": "run",
         "params": {
             "iso3_country": ["USA"],
-            "save_local": True,
-            "path_local": "/data",
+            "path_local": "/data/admin_boundaries",
         },
     },
 }
