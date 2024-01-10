@@ -80,7 +80,7 @@ def run(path_local):
         "--collection": "population",
         "--asset-href": link,
     }
-    output_json = run_fio_stac(geo_file, args)
+    output_json = run_fio_stac(["fio", "stac"], geo_file, args)
     output_json["output"]["title"] = title
     output_json["output"]["description"] = description
     output_json["output"]["license"] = license
