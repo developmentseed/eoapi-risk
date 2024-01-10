@@ -2,7 +2,7 @@ from tqdm import tqdm
 import geopandas as gpd
 import logging
 from joblib import Parallel, delayed
-from ..utils import run_cli
+from ..utils import run_cli, save_postgis
 import json
 import os
 
@@ -26,6 +26,12 @@ RENAME_COLUMNS = {
 }
 STAC_VERSION = "1.0.0"
 LICENSE = "Creative Commons Attribution-ShareAlike 2.0"
+DESCRIPTION = (
+    "A concise overview of {iso3} provincial boundaries and identifiers from the GADM database, "
+    "focusing on the structure and accuracy of Level {adm} administrative data. Ideal for  geographic and planning applications."
+)
+TITLE = "GADM {iso3} Administrative Level {adm} Data Overview"
+COLLECTION = "admin_boundaries"
 
 
 def dowload_gadm_data(iso3, adm, path_local):
@@ -35,25 +41,18 @@ def dowload_gadm_data(iso3, adm, path_local):
         # ##############
         # metadata
         # ##############
-        item = f"admin_boundaries_{iso3}_adm{adm}".lower()
-        collection = "admin_boundaries"
-        title = f"GADM {iso3} Administrative Level {adm} Data Overview"
-        description = (
-            f"A concise overview of {iso3} provincial boundaries and identifiers from the GADM database, "
-            f"focusing on the structure and accuracy of Level {adm} administrative data. Ideal for  geographic and planning applications."
-        )
+        item = f"{COLLECTION}_{iso3}_adm{adm}".lower()
+        title = TITLE.format(iso3=iso3, adm=str(adm))
+        description = DESCRIPTION.format(iso3=iso3, adm=str(adm))
         args = {
             "--id": item,
             "--datetime": "2023-07-16",
-            "--collection": collection,
+            "--collection": COLLECTION,
             "--asset-href": gadm_url,
         }
         # ##############
         # items
         ########
-        # gdf["collection"] = collection
-        # gdf["table"] = item
-        # clear data
         if adm == 0:
             gdf["ID"] = gdf["GID_0"]
         else:
@@ -72,8 +71,18 @@ def dowload_gadm_data(iso3, adm, path_local):
             ]
         file_path = f"{path_local}/{item}.geojson"
         gdf.to_file(file_path, driver="GeoJSON")
+        logger.info("Saving dataset in DB..")
+        save_postgis(
+            gdf=gdf,
+            table_name=item,
+            if_exists="replace",
+            index=True,
+            schema="pgstac",
+            table_id="id",
+        )
         # ##############
         # save item stac
+        # ##############
 
         output_json = run_cli(["fio", "stac"], file_path, args)
 
@@ -86,15 +95,20 @@ def dowload_gadm_data(iso3, adm, path_local):
             "rel": gadm_url,
             "title": title,
         }
-        stac_path = f"{path_local}/{item}_stac_item_.json"
+        stac_item_path = f"{path_local}/{item}_stac_item_.json"
 
-        with open(stac_path, "w") as file:
+        with open(stac_item_path, "w") as file:
             file.write(json.dumps(output_json["output"]))
-
-        return file_path, stac_path
+        #################
+        # Run: pypgstac load collections
+        #################
+        output_json = run_cli(
+            ["pypgstac", "load", "collections"],
+            stac_item_path,
+            {"--method": "insert_ignore"},
+        )
     except Exception as ex:
         logger.error(f"no data for  {iso3} ({adm})\n{ex}")
-        return None
 
 
 def ingest_stac(collection_path_, data_path_):
