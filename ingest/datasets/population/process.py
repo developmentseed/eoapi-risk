@@ -63,16 +63,16 @@ def run(path_local):
     file_name = link.split("/")[-1]
     id_stac_item = file_name.rsplit(".", 2)[0]
     file_gpkg = download_data(link, f"{path_local}/tmp/{file_name}")
-    gdf_items = gpd.read_file(file_gpkg)
-    gdf_items = gdf_items.to_crs(4326)
+    gdf = gpd.read_file(file_gpkg)
+    gdf = gdf.to_crs(4326)
 
     # save datasets
     geo_file = f"{path_local}/items.geojson"
-    gdf_items.to_file(geo_file, driver="GeoJSON")
+    gdf.to_file(geo_file, driver="GeoJSON")
 
     # generate stac item
-    description = "Built from Kontur Population, Global Population Density for 400m H3 Hexagons Vector H3 hexagons with population counts at 400m resolution"
     title = "Afghanistan, Population Density for 400m H3 Hexagons"
+    description = "Built from Kontur Population, Global Population Density for 400m H3 Hexagons Vector H3 hexagons with population counts at 400m resolution"
     license = "Creative Commons Attribution International"
     args = {
         "--id": id_stac_item,
@@ -81,9 +81,10 @@ def run(path_local):
         "--asset-href": link,
     }
     output_json = run_fio_stac(geo_file, args)
-    output_json["output"]["description"] = description
     output_json["output"]["title"] = title
+    output_json["output"]["description"] = description
     output_json["output"]["license"] = license
+    output_json["output"]["table"] = id_stac_item
     output_json["output"]["links"] = {
         "href": link,
         "rel": link,
