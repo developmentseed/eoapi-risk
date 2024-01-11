@@ -37,7 +37,6 @@ def download_data(link, file_tmp_path):
 
     total_size_in_bytes = int(response.headers.get("content-length", 0))
     # create folter
-    makedirs("/".join(file_tmp_path.split("/")[:-1]), exist_ok=True)
     with open(file_tmp_path, "wb") as file, tqdm(
         desc=file_tmp_path,
         total=total_size_in_bytes,
@@ -57,8 +56,9 @@ def download_data(link, file_tmp_path):
 
 def run(path_local):
     link = get_link()
+    makedirs(path_local, exist_ok=True)
     file_name = link.split("/")[-1]
-    file_gpkg = download_data(link, f"{path_local}/tmp/{file_name}")
+    file_gpkg = download_data(link, f"{path_local}/{file_name}")
     gdf = gpd.read_file(file_gpkg)
     gdf = gdf.to_crs(4326)
     gdf["id"] = gdf.index

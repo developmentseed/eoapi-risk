@@ -17,7 +17,7 @@ DATASETS = {
     "population": {
         "module": "datasets.population.process",
         "function": "run",
-        "params": {"path_local": "/data"},
+        "params": {"path_local": "/data/population"},
     },
     "admin_boundaries": {
         "module": "datasets.admin_boundaries.process",
