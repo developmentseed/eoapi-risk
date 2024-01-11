@@ -27,4 +27,11 @@ DATASETS = {
             "path_local": "/data/admin_boundaries",
         },
     },
+    "shakemap_peak": {
+        "module": "datasets.shakemap_peak.process",
+        "function": "run",
+        "params": {
+            "path_local": "/data",
+        },
+    },
 }
