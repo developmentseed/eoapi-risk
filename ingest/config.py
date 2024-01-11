@@ -2,7 +2,7 @@ DATASETS = {
     "maxar_opendata": {
         "module": "datasets.maxar_opendata.process",
         "function": "generate",
-        "params": {"output_dir": "/data/health_facilities"},
+        "params": {"output_dir": "/data/maxar_opendata", "limit": 2},
     },
     "buildings": {
         "module": "datasets.buildings.process",
@@ -17,7 +17,7 @@ DATASETS = {
     "population": {
         "module": "datasets.population.process",
         "function": "run",
-        "params": {"path_local": "/data"},
+        "params": {"path_local": "/data/population"},
     },
     "admin_boundaries": {
         "module": "datasets.admin_boundaries.process",

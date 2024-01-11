@@ -4,7 +4,7 @@ import requests
 import re
 from tqdm import tqdm
 import json
-from os import makedirs
+from os import makedirs, environ
 import zipfile
 from ..utils import run_cli, save_postgis
 
@@ -64,9 +64,7 @@ def run(path_local):
     file_gpkg = download_data(link, f"{path_local}/{file_name}")
     gdf = gpd.read_file(file_gpkg)
     gdf = gdf.to_crs(4326)
-    gdf["id"] = gdf["fid"]
-    gdf_columns = [i for i in list(gdf.columns) if i not in ["fid"]]
-    gdf = gdf[[*gdf_columns, "geometry"]]
+    gdf["id"] = list(range(gdf.shape[0]))
     # ##############
     # metadata
     # ##############
@@ -113,5 +111,5 @@ def run(path_local):
     output_json = run_cli(
         ["pypgstac", "load", "collections"],
         stac_item_path,
-        {"--method": "insert_ignore"},
+        {"--method": "insert_ignore", "--dsn": environ["DATABASE_URL"]},
     )
