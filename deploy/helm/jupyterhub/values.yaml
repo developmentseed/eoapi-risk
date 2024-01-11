@@ -64,7 +64,7 @@ hub:
   services:
     eoapi:
       oauth_client_id: service-eoapi
-      oauth_redirect_uri: http://localhost #FIXME
+      oauth_redirect_uri: https://yf08o4dw2j.execute-api.us-east-1.amazonaws.com/auth/redirect
       oauth_no_confirm: true
 
 ingress:
