@@ -16,10 +16,12 @@ spec:
           export DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASS}@${PGHOST}:${PGPORT}/${POSTGRES_DBNAME}"
           dataOutput=/data
           mkdir -p $dataOutput
-          # python entrypoint.py population
-          #python entrypoint.py admin_boundaries
+          python entrypoint.py population
+          python entrypoint.py admin_boundaries
           python entrypoint.py buildings
           python entrypoint.py health_facilities
+          python entrypoint.py maxar_opendata
+          python entrypoint.py shakemap_peak
         env:
         - name: PGHOST
           value: pgstac
@@ -31,13 +33,13 @@ spec:
         volumeMounts:
         - name: data-volume
           mountPath: /data
-          resources:
-            requests:
-              memory: "7Gi"
-              cpu: "2"
-            limits:
-              memory: "7Gi"
-              cpu: "2"
+        resources:
+          requests:
+            memory: "6Gi"
+            cpu: "1"
+          limits:
+            memory: "6Gi"
+            cpu: "1"
       restartPolicy: Never
       volumes:
       - name: data-volume
