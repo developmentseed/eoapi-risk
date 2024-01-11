@@ -1,4 +1,4 @@
-from os import  makedirs, environ
+from os import makedirs, environ
 import geopandas as gpd
 import logging
 import requests
@@ -61,20 +61,10 @@ def run(path_local):
     file_gpkg = download_data(link, f"{path_local}/tmp/{file_name}")
     gdf = gpd.read_file(file_gpkg)
     gdf = gdf.to_crs(4326)
+    gdf["id"] = gdf.index
 
-    # save datasets
-    geo_file = f"{path_local}/items.geojson"
-    gdf.to_file(geo_file, driver="GeoJSON")
-
-    args = {
-        "--id": ITEM,
-        "--datetime": DATETIME,
-        "--collection": COLLECTION,
-        "--asset-href": link,
-    }
     file_path = f"{path_local}/{ITEM}.geojson"
     gdf.to_file(file_path, driver="GeoJSON")
-    
     # #################
     # save in database
     # #################
@@ -85,12 +75,20 @@ def run(path_local):
         if_exists="replace",
         index=True,
         schema="pgstac",
-        table_id="id"
+        table_id="id",
     )
-    
+
     # #################
     # save item stac
     # #################
+    logger.info("Running fio stac for dataset...")
+    args = {
+        "--id": ITEM,
+        "--datetime": DATETIME,
+        "--collection": COLLECTION,
+        "--asset-href": link,
+    }
+
     output_json = run_cli(["fio", "stac"], file_path, args)
     output_json["output"]["title"] = TITLE
     output_json["output"]["description"] = DESCRIPTION
@@ -109,6 +107,7 @@ def run(path_local):
     #################
     # Run: pypgstac load collections
     #################
+    logger.info("Importing item/colletion to pgstac...")
     output_json = run_cli(
         ["pypgstac", "load", "collections"],
         stac_item_path,
