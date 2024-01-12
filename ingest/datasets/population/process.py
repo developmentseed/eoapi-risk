@@ -60,7 +60,6 @@ def run(path_local):
     #################
     logger.info("\n\nLoad collection into the DB..")
     stac_collection_path = f"datasets/population/collection.json"
-    logger.info("Importing colletion to pgstac...")
     output_json = run_cli(
         ["pypgstac", "load", "collections"],
         stac_collection_path,

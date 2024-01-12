@@ -1,0 +1,17 @@
+{
+  "id": "maxar_opendata",
+  "stac_version": "1.0.0",
+  "license": "CC-BY-NC-4.0",
+  "title": "Maxar ARD Open Data Catalog",
+  "type": "Collection",
+  "description": "Maxar ARD Open Data Catalog",
+  "links": [],
+  "extent": {
+    "spatial": {
+      "bbox": [[-180, -90, 180, 90]]
+    },
+    "temporal": {
+      "interval": []
+    }
+  }
+}
