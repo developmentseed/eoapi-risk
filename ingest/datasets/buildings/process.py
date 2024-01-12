@@ -26,7 +26,7 @@ PAGE_SOURCES = {
         "original_extension": "gpkg.zip",
         "case": "zip",
         "filename": "hotosm_afg_buildings_polygons_gpkg",
-        "item": "hotosm_afg_buildings_polygons",
+        "item": "hotosm_afg_osm",
     },
     "https://data.humdata.org/dataset/afghanistan-buildings-footprint-herat-province": {
         "condition": "afghanistan-herat-earthquake-epicenter-googleresearch",
@@ -36,7 +36,7 @@ PAGE_SOURCES = {
         "original_extension": "csv",
         "case": "csv",
         "filename": "afghanistan-buildings-footprint-herat-province",
-        "item": "afghanistan_buildings_footprint_herat_province",
+        "item": "afg_footprint_herat_province",
     },
 }
 STAC_VERSION = "1.0.0"
@@ -61,7 +61,7 @@ def get_link(link_, condition):
 
 def download_data(link, file_tmp_path, case):
     file_save = file_tmp_path
-
+    return file_tmp_path
     block_size = 1024
     response = requests.get(link, stream=True)
     total_size_in_bytes = int(response.headers.get("content-length", 0))

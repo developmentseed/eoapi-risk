@@ -1,10 +1,10 @@
 {
-    "id": "buildings",
+    "id": "health_facilities",
     "stac_version": "1.0.0",
-    "license": "Creative Commons Attribution International",
-    "title": "Buildings Footprint",
+    "license": "Open Database License (ODC-ODbL)",
+    "title": "Health Facilities",
     "type": "Collection",
-    "description": "Buildings Footprint",
+    "description": "OpenStreetMap exports for use in GIS applications",
     "links":[],
     "extent": {
         "spatial": {
@@ -20,8 +20,8 @@
         "temporal": {
             "interval": [
                 [
-                    "2016-10-16:00:00.000Z",
-                    "2023-12-13T00:00:00.000Z"
+                    "2019-12-05:00:00.000Z",
+                    "2023-11-16T00:00:00.000Z"
                 ]
             ]
         }
