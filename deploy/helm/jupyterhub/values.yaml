@@ -61,6 +61,11 @@ hub:
       authenticator_class: github
     Authenticator:
       auto_login_oauth2_authorize: True
+    loadRoles:
+      user:
+        scopes:
+          - self
+          - "access:services"
   services:
     eoapi:
       oauth_client_id: service-eoapi
