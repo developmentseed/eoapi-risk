@@ -1,0 +1,29 @@
+{
+    "id": "admin_boundaries",
+    "stac_version": "1.0.0",
+    "license": "Creative Commons Attribution-ShareAlike 2.0",
+    "title": "GADM Administrative Boundaries",
+    "type": "Collection",
+    "description": "Administrative Boundaries",
+    "links":[],
+    "extent": {
+        "spatial": {
+            "bbox": [
+                [
+                    -180,
+                    -90,
+                    180,
+                    90
+                ]
+            ]
+        },
+        "temporal": {
+            "interval": [
+                [
+                    "2022-07-16:00:00.000Z",
+                    "2024-01-31T00:00:00.000Z"
+                ]
+            ]
+        }
+    }
+}

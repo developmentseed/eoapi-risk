@@ -26,7 +26,7 @@ PAGE_SOURCES = {
         "original_extension": "gpkg.zip",
         "case": "zip",
         "filename": "hotosm_afg_buildings_polygons_gpkg",
-        "item": "hotosm_afg_buildings_polygons",
+        "item": "hotosm_afg_osm",
     },
     "https://data.humdata.org/dataset/afghanistan-buildings-footprint-herat-province": {
         "condition": "afghanistan-herat-earthquake-epicenter-googleresearch",
@@ -36,7 +36,7 @@ PAGE_SOURCES = {
         "original_extension": "csv",
         "case": "csv",
         "filename": "afghanistan-buildings-footprint-herat-province",
-        "item": "afghanistan_buildings_footprint_herat_province",
+        "item": "afg_footprint_herat_province",
     },
 }
 STAC_VERSION = "1.0.0"
@@ -61,7 +61,6 @@ def get_link(link_, condition):
 
 def download_data(link, file_tmp_path, case):
     file_save = file_tmp_path
-
     block_size = 1024
     response = requests.get(link, stream=True)
     total_size_in_bytes = int(response.headers.get("content-length", 0))
@@ -102,6 +101,18 @@ def read_file(file_path, case):
 
 def run(path_local):
     makedirs(path_local, exist_ok=True)
+    #################
+    # Load collection into the DB
+    #################
+    logger.info("\n\nLoad collection into the DB..")
+    stac_collection_path = f"datasets/buildings/collection.json"
+    logger.info("Importing colletion to pgstac...")
+    output_json = run_cli(
+        ["pypgstac", "load", "collections"],
+        stac_collection_path,
+        {"--method": "insert_ignore", "--dsn": environ["DATABASE_URL"]},
+    )
+
     for link, v in tqdm(list(PAGE_SOURCES.items()), desc="Processing sources"):
         try:
             source_link = get_link(link, v.get("condition"))
@@ -158,7 +169,7 @@ def run(path_local):
             # Run: pypgstac load collections
             #################
             output_json = run_cli(
-                ["pypgstac", "load", "collections"],
+                ["pypgstac", "load", "items"],
                 stac_item_path,
                 {"--method": "insert_ignore", "--dsn": environ["DATABASE_URL"]},
             )

@@ -15,7 +15,7 @@ PAGE_LINK = "https://data.humdata.org/dataset/hotosm_afg_health_facilities"
 REGEX_URL = r'<a\s+(?:[^>]*?\s+)?href="(http[s]?://[^"]*)"'
 STAC_VERSION = "1.0.0"
 COLLECTION = "health_facilities"
-ITEM = f"{COLLECTION}_afghanistan_openstreetmap"
+ITEM = f"{COLLECTION}_afg_osm"
 TITLE = "Afghanistan Health Facilities (OpenStreetMap Export)"
 DESCRIPTION = (
     "OpenStreetMap exports for use in GIS applications. This theme includes all OpenStreetMap features "
@@ -59,6 +59,17 @@ def download_data(link, file_tmp_path):
 
 def run(path_local):
     makedirs(path_local, exist_ok=True)
+    #################
+    # Load collection into the DB
+    #################
+    logger.info("\n\nLoad collection into the DB..")
+    stac_collection_path = f"datasets/health_facilities/collection.json"
+    logger.info("Importing colletion to pgstac...")
+    output_json = run_cli(
+        ["pypgstac", "load", "collections"],
+        stac_collection_path,
+        {"--method": "insert_ignore", "--dsn": environ["DATABASE_URL"]},
+    )
     link = get_link()
     file_name = link.split("/")[-1]
     file_gpkg = download_data(link, f"{path_local}/{file_name}")
@@ -70,7 +81,7 @@ def run(path_local):
     # ##############
     args = {
         "--id": ITEM,
-        "--datetime": "2023-07-16",
+        "--datetime": "2023-11-16",
         "--collection": COLLECTION,
         "--asset-href": link,
     }
@@ -109,7 +120,7 @@ def run(path_local):
     # Run: pypgstac load collections
     #################
     output_json = run_cli(
-        ["pypgstac", "load", "collections"],
+        ["pypgstac", "load", "items"],
         stac_item_path,
         {"--method": "insert_ignore", "--dsn": environ["DATABASE_URL"]},
     )

@@ -90,11 +90,13 @@ def dowload_gadm_data(iso3, adm, path_local):
         output_json["output"]["description"] = description
         output_json["output"]["license"] = LICENSE
         output_json["output"]["table"] = item
-        output_json["output"]["links"] = {
-            "href": gadm_url,
-            "rel": gadm_url,
-            "title": title,
-        }
+        output_json["output"]["links"] = [
+            {
+                "href": gadm_url,
+                "rel": gadm_url,
+                "title": title,
+            }
+        ]
         stac_item_path = f"{path_local}/{item}_stac_item_.json"
 
         with open(stac_item_path, "w") as file:
@@ -103,7 +105,7 @@ def dowload_gadm_data(iso3, adm, path_local):
         # Run: pypgstac load collections
         #################
         output_json = run_cli(
-            ["pypgstac", "load", "collections"],
+            ["pypgstac", "load", "items"],
             stac_item_path,
             {"--method": "insert_ignore", "--dsn": environ["DATABASE_URL"]},
         )
@@ -118,6 +120,14 @@ def ingest_stac(collection_path_, data_path_):
 
 
 def run(iso3_country: list, path_local: str):
+    #################
+    # Load collection into the DB
+    #################
+    logger.info("\n\nLoad collection into the DB..")
+    stac_collection_path = f"datasets/admin_boundaries/collection.json"
+    logger.info("Importing colletion to pgstac...")
+    output_json = run_cli(["pypgstac", "load", "collections"], stac_collection_path,
+        {"--method": "insert_ignore", "--dsn": environ["DATABASE_URL"]}, )
     # generate links
     gadm_combinations = [(iso3, adm) for iso3 in iso3_country for adm in ADM]
     # process links
