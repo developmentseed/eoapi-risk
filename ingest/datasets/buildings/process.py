@@ -102,6 +102,18 @@ def read_file(file_path, case):
 
 def run(path_local):
     makedirs(path_local, exist_ok=True)
+    #################
+    # Load collection into the DB
+    #################
+    logger.info("\n\nLoad collection into the DB..")
+    stac_collection_path = f"datasets/buildings/collection.json"
+    logger.info("Importing colletion to pgstac...")
+    output_json = run_cli(
+        ["pypgstac", "load", "collections"],
+        stac_collection_path,
+        {"--method": "insert_ignore", "--dsn": environ["DATABASE_URL"]},
+    )
+
     for link, v in tqdm(list(PAGE_SOURCES.items()), desc="Processing sources"):
         try:
             source_link = get_link(link, v.get("condition"))
@@ -158,7 +170,7 @@ def run(path_local):
             # Run: pypgstac load collections
             #################
             output_json = run_cli(
-                ["pypgstac", "load", "collections"],
+                ["pypgstac", "load", "items"],
                 stac_item_path,
                 {"--method": "insert_ignore", "--dsn": environ["DATABASE_URL"]},
             )
