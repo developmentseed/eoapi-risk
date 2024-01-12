@@ -58,35 +58,35 @@ def run(path_local):
     #################
     # Load collection into the DB
     #################
-    # logger.info("\n\nLoad collection into the DB..")
-    # stac_collection_path = f"datasets/population/collection.json"
-    # logger.info("Importing colletion to pgstac...")
-    # output_json = run_cli(
-    #     ["pypgstac", "load", "collections"],
-    #     stac_collection_path,
-    #     {"--method": "insert_ignore", "--dsn": environ["DATABASE_URL"]},
-    # )
+    logger.info("\n\nLoad collection into the DB..")
+    stac_collection_path = f"datasets/population/collection.json"
+    logger.info("Importing colletion to pgstac...")
+    output_json = run_cli(
+        ["pypgstac", "load", "collections"],
+        stac_collection_path,
+        {"--method": "insert_ignore", "--dsn": environ["DATABASE_URL"]},
+    )
     # #################
     # Read and Save geo data in the DB
     # #################
-    # logger.info("\n\nRead and Save geo data in the DB...")
+    logger.info("\n\nRead and Save geo data in the DB...")
     link = get_link()
-    # makedirs(path_local, exist_ok=True)
-    # file_name = link.split("/")[-1]
-    # file_gpkg = download_data(link, f"{path_local}/{file_name}")
-    # gdf = gpd.read_file(file_gpkg)
-    # gdf = gdf.to_crs(4326)
-    # gdf["id"] = gdf.index
+    makedirs(path_local, exist_ok=True)
+    file_name = link.split("/")[-1]
+    file_gpkg = download_data(link, f"{path_local}/{file_name}")
+    gdf = gpd.read_file(file_gpkg)
+    gdf = gdf.to_crs(4326)
+    gdf["id"] = gdf.index
     file_path = f"{path_local}/{ITEM}.geojson"
-    # gdf.to_file(file_path, driver="GeoJSON")
-    # save_postgis(
-    #     gdf=gdf,
-    #     table_name=ITEM,
-    #     if_exists="replace",
-    #     index=False,
-    #     schema="public",
-    #     table_id="id",
-    # )
+    gdf.to_file(file_path, driver="GeoJSON")
+    save_postgis(
+        gdf=gdf,
+        table_name=ITEM,
+        if_exists="replace",
+        index=False,
+        schema="public",
+        table_id="id",
+    )
 
     # #################
     # Save Item stac in the DB
