@@ -51,7 +51,8 @@ jobs:
         --create-namespace \
         --version=3.1.0 \
         --values deploy/helm/jupyterhub/values.yaml \
-        --set hub.config.GitHubOAuthenticator.client_secret="${{ secrets.GH_CLIENT_SECRET }}"
+        --set hub.config.GitHubOAuthenticator.client_secret="${{ secrets.GH_CLIENT_SECRET }}" \
+        --set hub.services.eoapi.api_token="${{ secrets.OAUTH_CLIENT_SECRET }}"
 
     - name: Create contacts configmap
       run: kubectl apply -f deploy/k8s/project-contact.yaml --namespace ifrc-eoapi-risk

@@ -66,6 +66,7 @@ hub:
       oauth_client_id: service-eoapi
       oauth_redirect_uri: https://yf08o4dw2j.execute-api.us-east-1.amazonaws.com/docs/oauth2-redirect
       oauth_no_confirm: true
+      api_token: replace_me
 
 ingress:
   enabled: true
