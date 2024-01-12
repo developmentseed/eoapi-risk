@@ -61,7 +61,6 @@ def get_link(link_, condition):
 
 def download_data(link, file_tmp_path, case):
     file_save = file_tmp_path
-    return file_tmp_path
     block_size = 1024
     response = requests.get(link, stream=True)
     total_size_in_bytes = int(response.headers.get("content-length", 0))
