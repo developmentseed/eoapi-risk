@@ -61,17 +61,21 @@ hub:
       authenticator_class: github
     Authenticator:
       auto_login_oauth2_authorize: True
-    loadRoles:
-      user:
-        scopes:
-          - self
-          - "access:services"
   services:
     eoapi:
       oauth_client_id: service-eoapi
       oauth_redirect_uri: https://yf08o4dw2j.execute-api.us-east-1.amazonaws.com/docs/oauth2-redirect
       oauth_no_confirm: true
       api_token: replace_me
+  loadRoles:
+    eoapiUser:
+      description: Users allowed to access eoAPI
+      users:
+        - alukach
+      services:
+        - eoapi
+      scopes:
+        - self
 
 ingress:
   enabled: true
