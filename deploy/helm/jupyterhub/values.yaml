@@ -76,6 +76,8 @@ hub:
         - eoapi
       scopes:
         - self
+        - access:servers
+        - access:services
 
 ingress:
   enabled: true
