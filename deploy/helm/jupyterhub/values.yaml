@@ -68,7 +68,7 @@ hub:
       oauth_no_confirm: true
       api_token: replace_me
   loadRoles:
-    eoapiUser:
+    eoapi_user:
       description: Users allowed to access eoAPI
       users:
         - alukach
