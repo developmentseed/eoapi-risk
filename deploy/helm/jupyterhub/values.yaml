@@ -30,8 +30,6 @@ singleuser:
       # data is a YAML structure here but will be rendered to JSON file as our
       # file extension is ".json".
       data:
-        NotebookApp:
-          allow_origin: '*'
         MappingKernelManager:
           # cull_idle_timeout: timeout (in seconds) after which an idle kernel is
           # considered ready to be culled
