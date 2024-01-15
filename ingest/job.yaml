@@ -36,13 +36,12 @@ spec:
         resources:
           requests:
             memory: "6Gi"
-            cpu: "1"
+            cpu: "2"
           limits:
             memory: "6Gi"
-            cpu: "1"
+            cpu: "2"
       restartPolicy: Never
       volumes:
       - name: data-volume
         emptyDir: {}
-
   backoffLimit: 0
