@@ -137,7 +137,7 @@ def run(path_local):
                 table_name=item,
                 if_exists="replace",
                 index=True,
-                schema="pgstac",
+                schema="public",
                 table_id="id",
             )
             # ##############
