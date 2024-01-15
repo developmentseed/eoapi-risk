@@ -7,7 +7,7 @@ spec:
     spec:
       containers:
       - name: eoapi-ingest-datasets
-        image: gcr.io/devseed-labs/eoapi-risk-ingest:0b20a8e
+        image: gcr.io/devseed-labs/eoapi-risk-ingest:{{VERSION}}
         imagePullPolicy: Always
         command:
         - sh
