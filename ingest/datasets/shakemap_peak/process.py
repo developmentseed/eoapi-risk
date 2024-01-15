@@ -1,5 +1,6 @@
 from tqdm import tqdm
 import geopandas as gpd
+from os import makedirs, environ
 import logging
 from joblib import Parallel, delayed
 from ..utils import run_cli, save_postgis
@@ -23,7 +24,7 @@ basename_files = [
 ]
 
 STAC_VERSION = "1.0.0"
-COLLECTION = "earthquake"
+COLLECTION = "earthquake_usgs_gov"
 ITEM = f"{COLLECTION}_shakemap_afg"
 TITLE = "Shakemap Peak Ground Acceleration, Afghanistan"
 DESCRIPTION = "Shakemap  - M 6.3 - 34 km NNW of Herat, Afghanistan"
@@ -31,7 +32,7 @@ LICENSE = "Creative Commons Attribution International"
 DATETIME = "2023-12-20"
 
 
-def dowload_zip_file(path_local):
+def dowload_and_process(path_local):
     response = requests.get(LINK)
     zip_file_path = f"{path_local}/shapefiles.zip"
     with open(zip_file_path, "wb") as file:
@@ -42,7 +43,7 @@ def dowload_zip_file(path_local):
         zip_ref.extractall(f"{path_local}/shapefiles")
 
     # Read each shapefile into GeoPandas
-    shapefile_dir = "shapefiles"
+    shapefile_dir = f"{path_local}/shapefiles"
     for filename in os.listdir(shapefile_dir):
         if filename.endswith(".shp"):
             file_basename, file_extension = os.path.splitext(filename)
@@ -56,7 +57,7 @@ def dowload_zip_file(path_local):
                 table_name=f"{ITEM}_{file_basename}",
                 if_exists="replace",
                 index=False,
-                schema="pgstac",
+                schema="public",
                 table_id="id",
             )
             args = {
@@ -79,7 +80,8 @@ def dowload_zip_file(path_local):
                 "rel": LINK,
                 "title": TITLE,
             }
-            stac_item_path = f"{path_local}/{file_path}_.json"
+            stac_item_path = f"{file_path}_.json"
+            print(stac_item_path)
             with open(stac_item_path, "w") as file:
                 file.write(json.dumps(output_json["output"]))
 
@@ -88,11 +90,22 @@ def dowload_zip_file(path_local):
             #################
             logger.info("Importing item/colletion to pgstac...")
             output_json = run_cli(
-                ["pypgstac", "load", "collections"],
+                ["pypgstac", "load", "items"],
                 stac_item_path,
                 {"--method": "insert_ignore"},
             )
 
 
 def run(path_local: str):
-    dowload_zip_file(path_local)
+    #################
+    # Load collection into the DB
+    #################
+    logger.info("\n\nLoad collection into the DB..")
+    stac_collection_path = f"datasets/shakemap_peak/collection.json"
+    run_cli(
+        ["pypgstac", "load", "collections"],
+        stac_collection_path,
+        {"--method": "insert_ignore", "--dsn": environ["DATABASE_URL"]},
+    )
+    
+    dowload_and_process(path_local)
