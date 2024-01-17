@@ -67,6 +67,7 @@ hub:
     c.JupyterHub.tornado_settings = {
         'headers': {
             'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': '*',
         },
     }
   services:
