@@ -61,6 +61,15 @@ hub:
       authenticator_class: github
     Authenticator:
       auto_login_oauth2_authorize: True
+  # Allow CORS (See https://github.com/jupyterhub/jupyterhub/pull/1539#issue-274486865)
+  extraConfig: |
+    c.Spawner.args = [f'--NotebookApp.allow_origin={"*"}']
+    c.JupyterHub.tornado_settings = {
+        'headers': {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': '*',
+        },
+    }
   services:
     eoapi:
       oauth_client_id: service-eoapi
