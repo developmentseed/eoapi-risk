@@ -28,6 +28,12 @@ raster:
         cpu: "256m"
         memory: "512Mi"
 
+vector:
+  enabled: true
+  settings:
+    envVars:
+      TIPG_CATALOG_TTL: "300"
+
 ingress:
   host: eoapi.ifrc-risk.k8s.labs.ds.io
   tls:
