@@ -52,6 +52,8 @@ def dowload_and_process(path_local):
             logger.info(f"Loaded {filename} into GeoDataFrame:")
             logger.info("Saving dataset in DB...")
             gdf["id"] = gdf.index
+            gdf.columns = [col.lower() for col in gdf.columns]
+            gdf['area'] = gdf.area
             save_postgis(
                 gdf=gdf,
                 table_name=f"{ITEM}_{file_basename}",
@@ -81,7 +83,6 @@ def dowload_and_process(path_local):
                 "title": TITLE,
             }
             stac_item_path = f"{file_path}_.json"
-            print(stac_item_path)
             with open(stac_item_path, "w") as file:
                 file.write(json.dumps(output_json["output"]))
 
