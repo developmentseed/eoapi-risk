@@ -7,11 +7,11 @@ singleuser:
 
   # Resource allocation per user
   memory:
-    limit: 1G
-    guarantee: 1G
+    limit: 1.5G
+    guarantee: 1.5G
   cpu:
-    limit: 0.5
-    guarantee: 0.5
+    limit: 1
+    guarantee: 1
   storage:
     extraVolumes:
       - name: shm-volume
