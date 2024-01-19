@@ -11,8 +11,8 @@ db:
         cpu: "212m"
         memory: "512Mi"
       limits:
-        cpu: "212m"
-        memory: "512Mi"
+        cpu: "512m"
+        memory: "1024Mi"
 
 raster:
   enabled: true
@@ -21,18 +21,25 @@ raster:
     tag: uvicorn-0.6.0
   settings:
     resources:
-      limits:
-        cpu: "500m"
-        memory: "512Mi"
       requests:
         cpu: "256m"
         memory: "512Mi"
+      limits:
+        cpu: "500m"
+        memory: "2048Mi"
 
 vector:
   enabled: true
   settings:
     envVars:
       TIPG_CATALOG_TTL: "300"
+    resources:
+      requests:
+        cpu: "256m"
+        memory: "512Mi"
+      limits:
+        cpu: "500m"
+        memory: "2048Mi"
 
 ingress:
   host: eoapi.ifrc-risk.k8s.labs.ds.io
