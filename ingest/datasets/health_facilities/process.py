@@ -76,6 +76,8 @@ def run(path_local):
     gdf = gpd.read_file(file_gpkg)
     gdf = gdf.to_crs(4326)
     gdf["id"] = list(range(gdf.shape[0]))
+    gdf = gdf.rename(columns={'addr:city': 'addr_city'})
+
     # ##############
     # metadata
     # ##############
