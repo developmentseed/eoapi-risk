@@ -77,7 +77,11 @@ def run(path_local):
     gdf = gdf.to_crs(4326)
     gdf["id"] = list(range(gdf.shape[0]))
     gdf = gdf.rename(columns={'addr:city': 'addr_city'})
-
+    gdf = gdf.rename(columns={'capacity:persons':'capacity_persons'})
+    gdf = gdf.rename(columns={'healthcare:speciality':'healthcare_speciality'})
+    gdf = gdf.rename(columns={'operator:type':'operator_type'})
+    gdf = gdf.rename(columns={'addr:full':'addr_full'})
+    
     # ##############
     # metadata
     # ##############
