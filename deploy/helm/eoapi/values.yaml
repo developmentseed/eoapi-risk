@@ -20,7 +20,7 @@ raster:
     name: ghcr.io/stac-utils/titiler-pgstac
     tag: uvicorn-1.2.1
   settings:
-   envVars:
+    envVars:
       TITILER_PGSTAC_API_ROOT_PATH: "/raster"
     resources:
       requests:
