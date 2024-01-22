@@ -32,7 +32,7 @@ vector:
   enabled: true
   image:
     name: ghcr.io/developmentseed/tipg
-    tag: uvicorn-0.6.1
+    tag: uvicorn-0.6.2
   settings:
     envVars:
       TIPG_CATALOG_TTL: "300"
