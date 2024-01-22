@@ -20,6 +20,8 @@ raster:
     name: ghcr.io/stac-utils/titiler-pgstac
     tag: uvicorn-1.2.1
   settings:
+   envVars:
+      TITILER_PGSTAC_API_ROOT_PATH: "/raster"
     resources:
       requests:
         cpu: "256m"
@@ -36,6 +38,7 @@ vector:
   settings:
     envVars:
       TIPG_CATALOG_TTL: "300"
+      TIPG_ROOT_PATH: "/vector"
     resources:
       requests:
         cpu: "256m"
