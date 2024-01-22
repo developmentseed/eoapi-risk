@@ -18,7 +18,7 @@ raster:
   enabled: true
   image:
     name: ghcr.io/stac-utils/titiler-pgstac
-    tag: uvicorn-1.2.0
+    tag: uvicorn-1.2.1
   settings:
     resources:
       requests:
