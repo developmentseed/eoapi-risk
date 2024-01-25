@@ -1,4 +1,7 @@
 db:
+  image:
+    name: ghcr.io/stac-utils/pgstac
+    tag: v0.8.4
   settings:
     secrets:
       PGUSER: "dbuser"
