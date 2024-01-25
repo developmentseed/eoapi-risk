@@ -147,7 +147,7 @@ def run_cli(pre_commands: list, file: str, args: dict):
             stderr=subprocess.PIPE,
             text=True,
         )
-        print(result)
+        print(result.stdout)
         if not result.stdout.strip():
             output = {}
         else:
@@ -156,6 +156,8 @@ def run_cli(pre_commands: list, file: str, args: dict):
         return {"output": output}
 
     except json.JSONDecodeError as json_err:
+        logger.error(json_err)
         return {"error": "JSON parsing error", "details": str(json_err)}
     except subprocess.CalledProcessError as e:
+        logger.error(e.stderr)
         return {"error": str(e), "output": e.output, "stderr": e.stderr}
