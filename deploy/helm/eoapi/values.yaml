@@ -2,6 +2,7 @@ db:
   image:
     name: ghcr.io/stac-utils/pgstac
     tag: v0.8.4
+  enable_data_fixtures: false
   settings:
     secrets:
       PGUSER: "dbuser"
