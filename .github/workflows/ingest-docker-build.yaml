@@ -5,6 +5,8 @@ on:
     - '*'
     paths:
     - 'ingest/**'
+  workflow_dispatch:
+
 env:
   PROJECT_ID: ${{ secrets.PROJECT_ID }}
   IMAGE: eoapi-risk-ingest
