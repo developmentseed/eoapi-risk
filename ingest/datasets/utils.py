@@ -140,7 +140,6 @@ def run_cli(pre_commands: list, file: str, args: dict):
     try:
         print("#" * 40)
         print(" ".join(command))
-        print("#" * 40)
         result = subprocess.run(
             command,
             check=True,
@@ -148,11 +147,12 @@ def run_cli(pre_commands: list, file: str, args: dict):
             stderr=subprocess.PIPE,
             text=True,
         )
+        print(result)
         if not result.stdout.strip():
             output = {}
         else:
             output = json.loads(result.stdout)
-
+        print("#" * 40)
         return {"output": output}
 
     except json.JSONDecodeError as json_err:
