@@ -11,10 +11,10 @@ services:
     env_file:
       - ./.env.example
   db:
-    image: ghcr.io/stac-utils/pgstac:v0.7.1
+    image: ghcr.io/stac-utils/pgstac:v0.8.4
     ports:
       - "5432:5432"
-    # volumes:
-    #   - ./pgstac-data:/var/lib/postgresql/data
+    volumes:
+      - ./pgstac-data:/var/lib/postgresql/data
     env_file:
       - ./.env.example
