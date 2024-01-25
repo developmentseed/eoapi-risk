@@ -9,6 +9,8 @@ RUN pip install -r /requirements.txt && \
     pip install git+http://github.com/developmentseed/fio-stac
 
 RUN pip install pypgstac==0.8.4
+RUN pip install psycopg
+RUN pip install psycopg_pool
 
 WORKDIR /app
 COPY datasets datasets
