@@ -1,4 +1,7 @@
 db:
+  image:
+    name: ghcr.io/stac-utils/pgstac
+    tag: v0.8.4
   settings:
     secrets:
       PGUSER: "dbuser"
@@ -11,22 +14,41 @@ db:
         cpu: "212m"
         memory: "512Mi"
       limits:
-        cpu: "212m"
-        memory: "512Mi"
+        cpu: "512m"
+        memory: "1024Mi"
 
 raster:
   enabled: true
   image:
     name: ghcr.io/stac-utils/titiler-pgstac
-    tag: uvicorn-0.6.0
+    tag: uvicorn-1.2.1
   settings:
+    envVars:
+      TITILER_PGSTAC_API_ROOT_PATH: "/raster"
     resources:
-      limits:
-        cpu: "500m"
-        memory: "512Mi"
       requests:
         cpu: "256m"
         memory: "512Mi"
+      limits:
+        cpu: "500m"
+        memory: "2048Mi"
+
+vector:
+  enabled: true
+  image:
+    name: ghcr.io/developmentseed/tipg
+    tag: uvicorn-0.6.2
+  settings:
+    envVars:
+      TIPG_CATALOG_TTL: "300"
+      TIPG_ROOT_PATH: "/vector"
+    resources:
+      requests:
+        cpu: "256m"
+        memory: "512Mi"
+      limits:
+        cpu: "500m"
+        memory: "2048Mi"
 
 ingress:
   host: eoapi.ifrc-risk.k8s.labs.ds.io
