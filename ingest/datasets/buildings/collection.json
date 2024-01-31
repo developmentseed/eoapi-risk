@@ -1,0 +1,29 @@
+{
+    "id": "buildings",
+    "stac_version": "1.0.0",
+    "license": "Creative Commons Attribution International",
+    "title": "Buildings Footprint",
+    "type": "Collection",
+    "description": "Buildings Footprint",
+    "links":[],
+    "extent": {
+        "spatial": {
+            "bbox": [
+                [
+                    -180,
+                    -90,
+                    180,
+                    90
+                ]
+            ]
+        },
+        "temporal": {
+            "interval": [
+                [
+                    "2016-10-16T00:00:00.000Z",
+                    "2023-12-13T00:00:00.000Z"
+                ]
+            ]
+        }
+    }
+}

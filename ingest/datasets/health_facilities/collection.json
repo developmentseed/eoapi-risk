@@ -1,0 +1,29 @@
+{
+    "id": "health_facilities",
+    "stac_version": "1.0.0",
+    "license": "Open Database License (ODC-ODbL)",
+    "title": "Health Facilities",
+    "type": "Collection",
+    "description": "OpenStreetMap exports for use in GIS applications",
+    "links":[],
+    "extent": {
+        "spatial": {
+            "bbox": [
+                [
+                    -180,
+                    -90,
+                    180,
+                    90
+                ]
+            ]
+        },
+        "temporal": {
+            "interval": [
+                [
+                    "2019-12-05T00:00:00.000Z",
+                    "2023-11-16T00:00:00.000Z"
+                ]
+            ]
+        }
+    }
+}

@@ -1,0 +1,29 @@
+{
+    "id": "population_hexbins",
+    "stac_version": "1.0.0",
+    "license": "Creative Commons Attribution International",
+    "title": "Population Density for 400m H3 Hexagons",
+    "type": "Collection",
+    "description": "Population Density for 400m H3 Hexagons",
+    "links":[],
+    "extent": {
+        "spatial": {
+            "bbox": [
+                [
+                    -180,
+                    -90,
+                    180,
+                    90
+                ]
+            ]
+        },
+        "temporal": {
+            "interval": [
+                [
+                    "2022-06-30T00:00:00.000Z",
+                    "2023-10-31T00:00:00.000Z"
+                ]
+            ]
+        }
+    }
+}

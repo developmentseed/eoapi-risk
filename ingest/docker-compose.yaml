@@ -1,0 +1,20 @@
+version: "3.8"
+services:
+  ingest:
+    image: devseed-labs/eoapi-risk-ingest:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./:/app/
+      - ./data:/data/
+    env_file:
+      - ./.env.example
+  db:
+    image: ghcr.io/stac-utils/pgstac:v0.8.4
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./pgstac-data:/var/lib/postgresql/data
+    env_file:
+      - ./.env.example

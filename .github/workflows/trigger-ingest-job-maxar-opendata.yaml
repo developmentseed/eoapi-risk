@@ -1,5 +1,4 @@
 name: Ingest Maxar open data
-
 on:
   workflow_dispatch:
 
@@ -25,8 +24,16 @@ jobs:
         gcloud config set compute/zone ${{ secrets.COMPUTE_ZONE }}
         gcloud container clusters get-credentials ${{ secrets.CLUSTER_NAME }}
 
-    - name: Trigger Maxar open data ingestion
+    - name: Get the latest commit SHA
+      id: sha
+      run: echo "::set-output name=short_sha::$(git rev-parse --short HEAD)"
+
+    - name: Update version in job.yaml
       run: |
-        kubectl -n  ifrc-eoapi-risk delete --ignore-not-found=true job eoapi-ingest-maxar-opendata
-        kubectl -n  ifrc-eoapi-risk apply -f ingest/datasets/maxar_opendata/job.yaml
-        echo "Job started; check the logs by running this command: 'kubectl -n  ifrc-eoapi-risk logs -f jobs/eoapi-ingest-maxar-opendata'"
+        sed -i 's/{{VERSION}}/${{ steps.sha.outputs.short_sha }}/g' ingest/job.yaml
+
+    - name: Trigger data ingestion
+      run: |
+        kubectl -n  ifrc-eoapi-risk delete --ignore-not-found=true job eoapi-ingest-datasets
+        kubectl -n  ifrc-eoapi-risk apply -f ingest/job.yaml
+        echo "Job started; check the logs by running this command: 'kubectl -n  ifrc-eoapi-risk logs -f jobs/eoapi-ingest-datasets'"
