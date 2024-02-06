@@ -25,6 +25,7 @@ raster:
   settings:
     envVars:
       TITILER_PGSTAC_API_ROOT_PATH: "/raster"
+      AWS_NO_SIGN_REQUEST: "YES"
     resources:
       requests:
         cpu: "500m"
