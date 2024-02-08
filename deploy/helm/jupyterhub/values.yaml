@@ -21,7 +21,7 @@ singleuser:
       - name: shm-volume
         mountPath: /dev/shm
     capacity: 50Gi
-  
+
   # Culling idle servers
   extraFiles:
     # jupyter_notebook_config reference: https://jupyter-notebook.readthedocs.io/en/stable/config.html
@@ -67,38 +67,45 @@ hub:
       oauth_redirect_uri: https://yf08o4dw2j.execute-api.us-east-1.amazonaws.com/docs/oauth2-redirect
       oauth_no_confirm: true
       api_token: replace_me
-  
-  # customScopes:
-  #   custom:eoapi:read:
-  #     description: Example read scope to demonstrate custom scope control
-  #   custom:eoapi:create:
-  #     description: Example write scope to demonstrate custom scope control
-  #   custom:eoapi:admin:
-  #     description: Do anything with example scopes
-  #     subscopes:
-  #       - custom:eoapi:read
-  #       - custom:eoapi:create
 
-  loadRoles:
-    eoapi_user:
-      description: Users allowed read-only access eoAPI demo service
-      users:
-        - alukach
-      services:
-        - eoapi
-      scopes:
-        - access:services
-    #     - custom:eoapi:read
-    
-    # eoapi_admins:
-    #   description: Users allowed admin access to eoAPI demo service
-    #   users:
-    #     - alukach
-    #   services:
-    #     - eoapi
-    #   scopes:
-    #     - access:services
-    #     - custom:eoapi:admin
+  extraConfig:
+    10-create-scopes: |
+      c.JupyterHub.custom_scopes = {
+          "custom:eoapi:read": {
+              "description": "Example read scope to demonstrate custom scope control"
+          },
+          "custom:eoapi:create": {
+              "description": "Example write scope to demonstrate custom scope control"
+          },
+          "custom:eoapi:admin": {
+              "description": "Do anything with example scopes",
+              "subscopes": [
+                  "custom:eoapi:read",
+                  "custom:eoapi:create",
+              ]
+          },
+      }
+
+      c.JupyterHub.load_roles = [
+          {
+              "name": "eoapi_user",
+              "description": "Users allowed admin access to eoAPI demo service",
+              "users": ["alukach"],
+              "scopes": [
+                  "access:services",
+                  "custom:eoapi:read",
+              ],
+          },
+          {
+              "name": "eoapi_user",
+              "description": "Users allowed admin access to eoAPI demo service",
+              "users": ["alukach"],
+              "scopes": [
+                  "access:services",
+                  "custom:eoapi:admin",
+              ],
+          },
+      ]
 
 ingress:
   enabled: true
