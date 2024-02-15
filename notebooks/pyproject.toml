@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "notebooks"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+lonboard = "^0.6.0"
+pyarrow = "^15"
+geopandas = "^0.14.2"
+shapely = "^2.0.2"
+pyogrio = "^0.7.2"
+pandas = "^2.1.4"
+sidecar = "^0.7.0"
+jupyterlab = "^4.1.1"
+ipykernel = "^6.29.2"
+pytz = "^2024.1"
+httpx = "^0.26.0"
+
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.28.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

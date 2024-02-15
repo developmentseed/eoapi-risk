@@ -1,2 +1,3 @@
 ingest/pgstac-data/
 ingest/data/
+*.ipynb_checkpoints/
