@@ -1,2 +1,4 @@
 ingest/pgstac-data/
 ingest/data/
+.DS_Store
+notebooks/temp/
